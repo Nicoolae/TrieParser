@@ -3,3 +3,8 @@
  * Write both the declaration and definition of the
  * container in this file.
  */
+
+template <typename T>
+struct bag{
+    T a;
+};
