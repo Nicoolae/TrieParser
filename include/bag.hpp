@@ -6,5 +6,5 @@
 
 template <typename T>
 struct bag{
-    T a;
+    int a;
 };

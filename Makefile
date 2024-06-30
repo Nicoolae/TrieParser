@@ -1,8 +1,8 @@
 OPTIONS = -std=c++17 -O0 -g -Wall -Wextra -I include/
-all: build/basic_main
+all: build/test 
 
-build/basic_main: 
-	g++ ${OPTIONS} tools/basic_main.cpp -o build/first_main
+build/test: tools/test.cpp
+	g++ ${OPTIONS} tools/test.cpp -o build/test
 
 clean: 
 	rm -rf build/*.o build/*
