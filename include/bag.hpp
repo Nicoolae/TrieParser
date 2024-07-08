@@ -48,6 +48,7 @@ bag<T>::~bag(){
 /** Copy assignment operator */
 template <typename T>
 bag<T>& bag<T>::operator=(bag<T> const& rhs){
+    std::cout << "AOO3";
     // Handle self-assigments
     if (this == &rhs){
         return *this;
@@ -67,6 +68,7 @@ bag<T>& bag<T>::operator=(bag<T> const& rhs){
 /** Move assignment operator */
 template <typename T>
 bag<T>& bag<T>::operator=(bag<T>&& rhs){
+    std::cout << "AOO1";
     if (this == &rhs){
         return *this;
     }else{
@@ -172,7 +174,7 @@ bool bag<T>::add_ordered(T const& val){
             
         //     return !equal_label || added;
         // }
-        Node* ptr = this->m_front->next;
+        Node* ptr = this->m_front;
         bool equal_label = false;
         bool added = false;
         // This works only on types that has get_label() as method
@@ -198,7 +200,7 @@ bool bag<T>::add_ordered(T const& val){
                 }
             }
             // Return successful when there is no equal label and the element is added
-            return !equal_label && added;
+            return !equal_label || added;
         }
     }else{
         push_front(val);

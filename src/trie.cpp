@@ -2,31 +2,31 @@
 
 /** Default constructor */
 template <typename T>
-trie<T>::trie(){
+trie<T>::trie()
+    : m_c(){
     // Creates a default trie like this:
     // 0.0 children = {}
     this->m_p = nullptr;
     this->m_l = nullptr;
     this->m_w = 0.0;
-    this->m_c = bag<trie<T>>();
 }
 
 /** Conversion constructor */
 template <typename T>
-trie<T>::trie(double weight){
+trie<T>::trie(double weight)
+    : m_c(){
     // Creates a leaf(which is a trie at this moment) like this
     // $weight children = {}
     this->m_p = nullptr;
     this->m_l = nullptr;
     this->m_w = weight;
-    this->m_c = bag<trie<T>>();
 }
 
 /** Copy constructor */
 template <typename T>
 trie<T>::trie(trie<T> const& rhs){
     this->m_p = rhs.m_p;
-    this->m_l = new T{*(rhs.m_l)};
+    if (rhs.m_l) m_l = new T{*(rhs.m_l)};
     this->m_w = rhs.m_w;
     this->m_c = rhs.m_c;
 }
@@ -34,6 +34,7 @@ trie<T>::trie(trie<T> const& rhs){
 /** Move constructor */
 template <typename T>
 trie<T>::trie(trie<T>&& rhs){
+    std::cout << "AOO";
     this->m_p = rhs.m_p;
     this->m_l = rhs.m_l;
     this->m_w = rhs.m_w;
@@ -46,7 +47,8 @@ trie<T>::trie(trie<T>&& rhs){
 /** Assignment operator overloaded */
 template <typename T>
 trie<T>& trie<T>::operator=(trie<T> const& rhs){
-    // Copy only children
+    // Copy only children and weight
+    this->m_w = rhs.m_w;
     this->m_c = rhs.m_c;
     return *this;
 }
@@ -54,7 +56,8 @@ trie<T>& trie<T>::operator=(trie<T> const& rhs){
 /** Move assignment operator */
 template <typename T>
 trie<T>& trie<T>::operator=(trie<T>&& rhs){
-    // Copy only children
+    // Copy only children and weight
+    this->m_w = rhs.m_w;
     this->m_c = rhs.m_c;
     return *this;
 }
@@ -65,7 +68,7 @@ trie<T>::~trie(){
     // Destroy only the label, the trie parent is in the stack
     // it will be automatically destroyed.
     // The destructor of bag will be automatically called.
-    delete this->m_l;
+    if(this->m_l) delete this->m_l;
 }
 
 /** Set weight to a leaf */
@@ -84,6 +87,8 @@ double trie<T>::get_weight() const{
 /** Set label */
 template <typename T>
 void trie<T>::set_label(T* l){
+    // First delete the prev label
+    if(this->m_l) delete this->m_l;
     // Duplicate the ptr
     T* new_l = new T{(*l)};
     this->m_l = new_l;
@@ -134,11 +139,15 @@ bag<trie<T>> const& trie<T>::get_children() const {
 template <typename T>
 void print_trie(trie<T> const& t){
     if (t.get_label())  std::cout << *(t.get_label()) << " ";
-    std::cout << t.get_weight() << " ";
+    if (t.get_parent() && t.get_children().empty()) std::cout << t.get_weight() << " ";
     if(!t.get_children().empty()){
         std::cout << "children = {\n    ";
         t.get_children().print_children();
-        std::cout << "\n}";
+        if (t.get_parent()){
+            std::cout << "\n    }";
+        }else{
+            std::cout << "\n}";
+        }
     }else{
          std::cout << "children = {}";
     }
