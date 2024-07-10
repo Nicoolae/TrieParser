@@ -12,10 +12,6 @@ struct bag{
             T val;
             Node* next;
         };
-
-        // Attributes
-        Node* m_front;
-        Node* m_back;
         
         // Methods
         void pop_front();
@@ -31,6 +27,57 @@ struct bag{
         bag<T>& operator=(bag<T>&&);
         bool add_ordered(T const&);
         void print_children() const;
+        T* get_next(const T&);
+
+        // Iterators
+        struct iterator {
+            using iterator_category = std::forward_iterator_tag;
+            using value_type = T;
+            using reference = T&;
+            using pointer = T*;
+
+            iterator(Node* ptr);
+
+            iterator& operator++();
+            reference operator*();
+            pointer operator->();
+
+            bool operator==(iterator const& rhs);
+            bool operator!=(iterator const& rhs);
+
+        private:
+            Node* m_ptr;
+        };
+
+        struct const_iterator {
+            using iterator_category = std::forward_iterator_tag;
+            using value_type = T const;
+            using reference = T const&;
+            using pointer = T const*;
+
+            const_iterator(Node const* ptr);
+
+            const_iterator& operator++();
+            reference operator*();
+            pointer operator->();
+
+            bool operator==(const_iterator const& rhs);
+            bool operator!=(const_iterator const& rhs);
+
+        private:
+            Node const* m_ptr;
+        };
+
+    iterator begin();
+    iterator end();
+
+    const_iterator begin() const;
+    const_iterator end() const;
+
+    private:
+        // Attributes
+        Node* m_front;
+        Node* m_back;
 };
 
 /** Default constructor */
@@ -216,4 +263,106 @@ void bag<T>::print_children() const{
         if (ptr->next) std::cout << ",\n    ";
         ptr = ptr->next;
     }
+}
+
+// Iterator
+
+/** Initialise an iterator from a defined element */
+template <typename T>
+bag<T>::iterator::iterator(Node* ptr) : m_ptr(ptr) {}
+
+template <typename T>
+typename bag<T>::iterator::reference bag<T>::iterator::operator*() {
+    return m_ptr->val;
+}
+
+template <typename T>
+typename bag<T>::iterator::pointer bag<T>::iterator::operator->() {
+    return &(m_ptr->val);
+}
+
+template <typename T>
+typename bag<T>::iterator& bag<T>::iterator::operator++() {
+    m_ptr = m_ptr->next;
+    return *this;
+}
+
+template <typename T>
+bool bag<T>::iterator::operator==(const bag<T>::iterator& rhs) {
+    return m_ptr == rhs.m_ptr;
+}
+
+template <typename T>
+bool bag<T>::iterator::operator!=(const bag<T>::iterator& rhs) {
+    return m_ptr != rhs.m_ptr;
+}
+
+template <typename T>
+typename bag<T>::iterator bag<T>::begin() {
+    return {m_front};
+}
+
+template <typename T>
+typename bag<T>::iterator bag<T>::end() {
+    return {nullptr};
+}
+
+// Const iterator
+/** Initialise an iterator from a defined element */
+template <typename T>
+bag<T>::const_iterator::const_iterator(const Node* ptr) : m_ptr(ptr) {}
+
+template <typename T>
+typename bag<T>::const_iterator::reference bag<T>::const_iterator::operator*() {
+    return m_ptr->val;
+}
+
+template <typename T>
+typename bag<T>::const_iterator::pointer bag<T>::const_iterator::operator->() {
+    return &(m_ptr->val);
+}
+
+template <typename T>
+typename bag<T>::const_iterator& bag<T>::const_iterator::operator++() {
+    m_ptr = m_ptr->next;
+    return *this;
+}
+
+template <typename T>
+bool bag<T>::const_iterator::operator==(const bag<T>::const_iterator& rhs) {
+    return m_ptr == rhs.m_ptr;
+}
+
+template <typename T>
+bool bag<T>::const_iterator::operator!=(const bag<T>::const_iterator& rhs) {
+    return m_ptr != rhs.m_ptr;
+}
+
+template <typename T>
+typename bag<T>::const_iterator bag<T>::begin() const{
+    return {m_front};
+}
+
+template <typename T>
+typename bag<T>::const_iterator bag<T>::end() const{
+    return {nullptr};
+}
+
+/**
+ * Returns the next children if have
+ * @param from the actual trie whose next has to be returned
+ * @return The next element of the passed trie 
+*/
+template <typename T>
+T* bag<T>::get_next(const T& from){
+    auto it = begin();
+    while (*it != from && it != end()){
+        it++;
+    }
+    if (it == end()){
+        return nullptr;
+    }else{
+        return &(*(++it));
+    }
+    
 }

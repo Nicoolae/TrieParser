@@ -152,3 +152,452 @@ void print_trie(trie<T> const& t){
          std::cout << "children = {}";
     }
 }
+
+// Node Iterator
+
+/** 
+ * Creates an iterator that points to any trie
+ * @param t trie to be pointed
+ */
+template <typename T>
+trie<T>::node_iterator::node_iterator(trie<T>* t) : m_ptr(t) {}
+
+/**
+ * Gets the label of the trie the iterator points to
+ * @returns A reference to the label
+*/
+template <typename T>
+typename trie<T>::node_iterator::reference trie<T>::node_iterator::operator*() const{
+    return (m_ptr->m_l) ? *(m_ptr->m_l) : throw parser_exception{"No label for the root"};
+}
+
+/**
+ * Gets the pointer of the label of the trie the iterator points to
+ * @returns Pointer to the label
+*/
+template <typename T>
+typename trie<T>::node_iterator::pointer trie<T>::node_iterator::operator->() const{
+    return &(*m_ptr);
+}
+
+/**
+ * Make the iterator to point to his parent(Pre-increment)
+ * @return A reference to an iterator that points at the parent
+*/
+template <typename T>
+typename trie<T>::node_iterator& trie<T>::node_iterator::operator++(){
+    this->m_ptr = this->m_ptr->m_p;
+    return *this;
+}
+
+/**
+ * Make the iterator to point to his parent(Post-increment)
+ * @return A reference to an iterator that points at the parent
+*/
+template <typename T>
+typename trie<T>::node_iterator trie<T>::node_iterator::operator++(int){
+    node_iterator pre_increment(this->m_ptr);
+    this->m_ptr++;
+    return pre_increment;
+}
+
+/**
+ * Check if 2 node_iterators are equal
+ * @return If equal
+*/
+template <typename T>
+bool trie<T>::node_iterator::operator==(node_iterator const& rhs) const{
+    return *(this->m_ptr) == *(rhs.m_ptr);
+}
+
+/**
+ * Check if 2 node_iterators are not equal
+ * @return If not equal
+*/
+template <typename T>
+bool trie<T>::node_iterator::operator==(node_iterator const& rhs) const{
+    return *(this->m_ptr) != *(rhs.m_ptr);
+}
+
+/** 
+ * Returns an iterator that points to the root
+ * @return node_iterator that points to the root
+ */
+template <typename T>
+typename trie<T>::node_iterator trie<T>::root(){
+    node_iterator root{this};
+    while(root.m_ptr->m_p){
+        ++root;
+    }
+    return root;
+}
+
+// Const iterator
+
+/** 
+ * Creates an iterator that points to any trie
+ * @param t trie to be pointed
+ */
+template <typename T>
+trie<T>::const_node_iterator::const_node_iterator(const trie<T>* t) : m_ptr(t) {}
+
+/**
+ * Gets the label of the trie the iterator points to
+ * @returns A reference to the label
+*/
+template <typename T>
+typename trie<T>::const_node_iterator::reference trie<T>::const_node_iterator::operator*() const{
+    return (m_ptr->m_l) ? *(m_ptr->m_l) : throw parser_exception{"No label for the root"};
+}
+
+/**
+ * Gets the pointer of the label of the trie the iterator points to
+ * @returns Pointer to the label
+*/
+template <typename T>
+typename trie<T>::const_node_iterator::pointer trie<T>::const_node_iterator::operator->() const{
+    return m_ptr->m_l;
+}
+
+/**
+ * Make the iterator to point to his parent(Pre-increment)
+ * @return A reference to an iterator that points at the parent
+*/
+template <typename T>
+typename trie<T>::const_node_iterator& trie<T>::const_node_iterator::operator++(){
+    this->m_ptr = this->m_ptr->m_p;
+    return *this;
+}
+
+/**
+ * Make the iterator to point to his parent(Post-increment)
+ * @return A reference to an iterator that points at the parent
+*/
+template <typename T>
+typename trie<T>::const_node_iterator trie<T>::const_node_iterator::operator++(int){
+    node_iterator pre_increment(this->m_ptr);
+    this->m_ptr++;
+    return pre_increment;
+}
+
+/**
+ * Check if 2 node_iterators are equal
+ * @return If equal
+*/
+template <typename T>
+bool trie<T>::const_node_iterator::operator==(const_node_iterator const& rhs) const{
+    return *(this->m_ptr) == *(rhs.m_ptr);
+}
+
+/**
+ * Check if 2 node_iterators are not equal
+ * @return If not equal
+*/
+template <typename T>
+bool trie<T>::const_node_iterator::operator==(const_node_iterator const& rhs) const{
+    return *(this->m_ptr) != *(rhs.m_ptr);
+}
+
+/** 
+ * Returns an iterator that points to the root
+ * @return node_iterator that points to the root
+ */
+template <typename T>
+typename trie<T>::const_node_iterator trie<T>::root() const{
+    node_iterator root{this};
+    while(root.m_ptr->m_p){
+        ++root;
+    }
+    return root;
+}
+
+
+/** Operator ++ leaf */
+/*
+- vado al padre dell'attuale foglia
+- cerco foglia nei figli, la prima che trovo raggiunta
+- se non trovo vai ancora al padre
+- e cerca ancora
+- questo fino a quando non arrivo alla radice e non ha nessun figlio
+*/
+
+// Begin/costruttore
+/*
+- due casi:
+- foglia tra i figli
+- figli solo nodi
+- se foglia sposta puntatore a quella
+- se figlio guarda tra i figli, se foglia sposta
+- se non foglia
+
+
+*/
+
+// Leaf iterator
+
+/**
+ * Instantiates a leaf iterator that points at the first leaf of the passed trie
+ * @param t the trie whose first leaf has to be pointed
+*/
+template <typename T>
+trie<T>::leaf_iterator::leaf_iterator(trie<T>* t){
+    if(!t){
+        this->m_ptr = t;
+    }else{
+        // The trie t can be a leaf or any other node
+        // If t is a node, so the leaf has to be in his children or in his children' children
+        // Check every first child until reach the leaf
+        while(t->m_c.empty()){
+            // t points to the first child
+            t = &(*(t->m_c.begin()));
+        }
+    }
+}
+
+/**
+ * Returns the object that iterators points to
+ * @return The trie pointed
+*/
+template <typename T>
+typename trie<T>::leaf_iterator::reference trie<T>::leaf_iterator::operator*() const {
+    return (m_ptr->m_l) ? *(m_ptr->m_l) : throw parser_exception{"No label for the root"};
+}
+
+/**
+ * Returns the pointer to the object that iterators points to
+ * @return The pointer to trie pointed
+*/
+template <typename T>
+typename trie<T>::leaf_iterator::pointer trie<T>::leaf_iterator::operator->() const {
+    return &(*m_ptr);
+}
+
+/**
+ * Points to the next leaf(pre-increment)
+ * @return An iterator that points to the next leaf || nullptr if no other leaves
+*/
+template <typename T>
+typename trie<T>::leaf_iterator& trie<T>::leaf_iterator::operator++(){
+    // Get the next child
+    while(!this->m_ptr->m_p->m_c.get_next(*(this->m_ptr))){
+        this->m_ptr = this->m_ptr->m_p;
+    }
+    // Once got the next child, instatiate a leaf iterator which will point to the first leaf
+    // The just steal its pointer
+    leaf_iterator pivot{this->m_ptr};
+    this->m_ptr = pivot.m_ptr;
+    return *this;
+}
+
+/**
+ * Points to the next leaf(post-increment)
+ * @return An iterator that points to the next leaf || nullptr if no other leaves
+*/
+template <typename T>
+typename trie<T>::leaf_iterator trie<T>::leaf_iterator::operator++(int){
+    leaf_iterator pre_increment{this->m_ptr};
+    // Get the next child
+    while(!this->m_ptr->m_p->m_c.get_next(*(this->m_ptr))){
+        this->m_ptr = this->m_ptr->m_p;
+    }
+    // Once got the next child, instatiate a leaf iterator which will point to the first leaf
+    // The just steal its pointer
+    leaf_iterator pivot{this->m_ptr};
+    this->m_ptr = pivot.m_ptr;
+    return pre_increment;
+}
+
+/**
+ * Returns if 2 leaf operators are equal
+ * @return Equal || Not Equal
+*/
+template <typename T>
+bool trie<T>::leaf_iterator::operator==(leaf_iterator const& rhs) const{
+    return *(this->m_ptr) == *(rhs.m_ptr);
+}
+
+/**
+ * Returns if 2 leaf operators are equal
+ * @return Equal || Not Equal
+*/
+template <typename T>
+bool trie<T>::leaf_iterator::operator!=(leaf_iterator const& rhs) const{
+    return *(this->m_ptr) != *(rhs.m_ptr);
+}
+
+/**
+ * Istantiates a node iterator that points at the same node
+ * @return The node iterator
+*/
+template <typename T>
+trie<T>::leaf_iterator::operator node_iterator() const{
+    return node_iterator{this->m_ptr};
+}
+
+/**
+ * Returns a const reference at the actual leaf
+ * @return Leaf
+*/
+template <typename T>
+trie<T>& trie<T>::leaf_iterator::get_leaf() const{
+    return *(this->m_ptr);
+}
+
+/**
+ * Returns a leaf iterator that points at the first element
+ * @return The leaf iterator 
+*/
+template <typename T>
+typename trie<T>::leaf_iterator trie<T>::begin(){
+    return leaf_iterator{&(*this)};
+}
+
+/**
+ * Returns a leaf iterator that points at the next leaf of last element
+ * @return The leaf iterator 
+*/
+template <typename T>
+typename trie<T>::leaf_iterator trie<T>::end(){
+    // The next of last leaf is the first of the next node of trie parent of this
+    if(this->m_p->m_c->get_next(&(*this))){
+        return {this->m_p->m_c->get_next(&(*this))};
+    }else{
+        return {nullptr};
+    }
+}
+
+// Const leaf iterator
+
+/**
+ * Instantiates a leaf iterator that points at the first leaf of the passed trie
+ * @param t the trie whose first leaf has to be pointed
+*/
+template <typename T>
+trie<T>::const_leaf_iterator::const_leaf_iterator(const trie<T>* t){
+    if(!t){
+        this->m_ptr = t;
+    }else{
+        // The trie t can be a leaf or any other node
+        // If t is a node, so the leaf has to be in his children or in his children' children
+        // Check every first child until reach the leaf
+        while(t->m_c.empty()){
+            // t points to the first child
+            t = &(*(t->m_c.begin()));
+        }
+    }
+}
+
+/**
+ * Returns the object that iterators points to
+ * @return The trie pointed
+*/
+template <typename T>
+typename trie<T>::const_leaf_iterator::reference trie<T>::const_leaf_iterator::operator*() const {
+    return (m_ptr->m_l) ? *(m_ptr->m_l) : throw parser_exception{"No label for the root"};
+}
+
+/**
+ * Returns the pointer to the object that iterators points to
+ * @return The pointer to trie pointed
+*/
+template <typename T>
+typename trie<T>::const_leaf_iterator::pointer trie<T>::const_leaf_iterator::operator->() const {
+    return &(*m_ptr);
+}
+
+/**
+ * Points to the next leaf(pre-increment)
+ * @return An iterator that points to the next leaf || nullptr if no other leaves
+*/
+template <typename T>
+typename trie<T>::const_leaf_iterator& trie<T>::const_leaf_iterator::operator++(){
+    // Get the next child
+    while(!this->m_ptr->m_p->m_c.get_next(*(this->m_ptr))){
+        this->m_ptr = this->m_ptr->m_p;
+    }
+    // Once got the next child, instatiate a leaf iterator which will point to the first leaf
+    // The just steal its pointer
+    leaf_iterator pivot{this->m_ptr};
+    this->m_ptr = pivot.m_ptr;
+    return *this;
+}
+
+/**
+ * Points to the next leaf(post-increment)
+ * @return An iterator that points to the next leaf || nullptr if no other leaves
+*/
+template <typename T>
+typename trie<T>::const_leaf_iterator trie<T>::const_leaf_iterator::operator++(int){
+    leaf_iterator pre_increment{this->m_ptr};
+    // Get the next child
+    while(!this->m_ptr->m_p->m_c.get_next(*(this->m_ptr))){
+        this->m_ptr = this->m_ptr->m_p;
+    }
+    // Once got the next child, instatiate a leaf iterator which will point to the first leaf
+    // The just steal its pointer
+    leaf_iterator pivot{this->m_ptr};
+    this->m_ptr = pivot.m_ptr;
+    return pre_increment;
+}
+
+/**
+ * Returns if 2 leaf operators are equal
+ * @return Equal || Not Equal
+*/
+template <typename T>
+bool trie<T>::const_leaf_iterator::operator==(const_leaf_iterator const& rhs) const{
+    return *(this->m_ptr) == *(rhs.m_ptr);
+}
+
+/**
+ * Returns if 2 leaf operators are equal
+ * @return Equal || Not Equal
+*/
+template <typename T>
+bool trie<T>::const_leaf_iterator::operator!=(const_leaf_iterator const& rhs) const{
+    return *(this->m_ptr) != *(rhs.m_ptr);
+}
+
+/**
+ * Istantiates a node iterator that points at the same node
+ * @return The node iterator
+*/
+template <typename T>
+trie<T>::const_leaf_iterator::operator const_node_iterator() const{
+    return node_iterator{this->m_ptr};
+}
+
+/**
+ * Returns a const reference at the actual leaf
+ * @return Leaf
+*/
+template <typename T>
+const trie<T>& trie<T>::const_leaf_iterator::get_leaf() const{
+    return *(this->m_ptr);
+}
+
+/**
+ * Returns a leaf iterator that points at the first element
+ * @return The leaf iterator 
+*/
+template <typename T>
+typename trie<T>::const_leaf_iterator trie<T>::begin() const{
+    return const_leaf_iterator{&(*this)};
+}
+
+/**
+ * Returns a leaf iterator that points at the next leaf of last element
+ * @return The leaf iterator 
+*/
+template <typename T>
+typename trie<T>::const_leaf_iterator trie<T>::end() const{
+    // The next of last leaf is the first of the next node of trie parent of this
+    if(this->m_p->m_c->get_next(&(*this))){
+        return {this->m_p->m_c->get_next(&(*this))};
+    }else{
+        return {nullptr};
+    }
+}
+
+// TODO OPERATOR == e testing iteratori
+
