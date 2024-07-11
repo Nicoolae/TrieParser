@@ -53,7 +53,7 @@ int main(){
     print_trie(t_1);
     */
 
-    /*
+    
     // TEST COPY/MOVE SEMANTICS
     trie<std::string> t_p_1;
     trie<std::string> t_p_2;
@@ -111,20 +111,43 @@ int main(){
     }
 
     // Copy constructor
-    // trie<std::string> t_3{t_p_1};
+    //trie<std::string> t_3{t_p_1};
 
     // Move constructor
     // trie<std::string> t_3 = foo(t_p_1);
 
     // Move assignment operator
-    trie<std::string> t_3;
-    std::cout << "AOO2";
-    t_3 = foo(t_p_1);
+    // trie<std::string> t_3;
+    // std::cout << "AOO2";
+    // t_3 = foo(t_p_1);
 
     print_trie(t_p_1);
     std::cout << std::endl;
     print_trie(t_p_2);
     std::cout << std::endl;
-    print_trie(t_3);
-    */
+    //print_trie(t_3);
+
+    // Operator ==
+    //std::cout << (t_c_2_1 != t_c_2_2) << std::endl;
+    
+    // Node iterator
+    // for (auto it = trie<std::string>::node_iterator{&t_c_1_1}; it != t_p_1.root(); ++it)
+    // {
+    //      std::cout << *it;
+    // }
+    // std::cout << std::endl;
+
+    // Leaf iterator
+    auto it = trie<std::string>::leaf_iterator{&t_p_2};
+    ++it;
+    print_trie(it.get_leaf());
+    std::cout << " | Label: " << *it << std::endl;
+    
+    it = t_p_1.begin();
+    print_trie(it.get_leaf());
+    std::cout << " | Label: " << *it << std::endl;
+
+    it = t_c_2_2.begin();
+    print_trie(it.get_leaf());
+    std::cout << " | Label: " << *it << std::endl;
 }

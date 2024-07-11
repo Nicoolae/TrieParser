@@ -28,6 +28,9 @@ struct bag{
         bool add_ordered(T const&);
         void print_children() const;
         T* get_next(const T&);
+        bool operator==(const bag<T>& rhs) const;
+        bool operator!=(const bag<T>& rhs) const;
+        
 
         // Iterators
         struct iterator {
@@ -95,7 +98,6 @@ bag<T>::~bag(){
 /** Copy assignment operator */
 template <typename T>
 bag<T>& bag<T>::operator=(bag<T> const& rhs){
-    std::cout << "AOO3";
     // Handle self-assigments
     if (this == &rhs){
         return *this;
@@ -115,7 +117,6 @@ bag<T>& bag<T>::operator=(bag<T> const& rhs){
 /** Move assignment operator */
 template <typename T>
 bag<T>& bag<T>::operator=(bag<T>&& rhs){
-    std::cout << "AOO1";
     if (this == &rhs){
         return *this;
     }else{
@@ -257,12 +258,16 @@ bool bag<T>::add_ordered(T const& val){
 
 template <typename T>
 void bag<T>::print_children() const{
-    Node* ptr = m_front;
-    while (ptr){
-        print_trie(ptr->val);
-        if (ptr->next) std::cout << ",\n    ";
-        ptr = ptr->next;
-    }
+     Node* ptr = m_front;
+     while (ptr){
+         print_trie(ptr->val);
+         if (ptr->next) std::cout << ",\n    ";
+         ptr = ptr->next;
+     }
+    // for(auto it = begin(); it != end(); ++it){
+    //     print_trie(*it);
+    //     if(it)
+    // }
 }
 
 // Iterator
@@ -356,13 +361,45 @@ typename bag<T>::const_iterator bag<T>::end() const{
 template <typename T>
 T* bag<T>::get_next(const T& from){
     auto it = begin();
-    while (*it != from && it != end()){
-        it++;
+    std::cout << "AO";
+    while (it != end() && ((*it).get_label() != from.get_label() || (*it) != from)){
+        ++it;
     }
     if (it == end()){
         return nullptr;
     }else{
         return &(*(++it));
     }
-    
+}
+
+// Comparison
+template <typename T>
+bool bag<T>::operator==(const bag<T>& rhs) const {
+    bool equal = true;
+    auto it1 = this->begin();
+    auto it2 = rhs.begin();
+    // Two bags are equal when:
+    // - Are both empty
+    // - Children have same attributes
+    if(this->empty() && rhs.empty()){ // Both are empty
+        return true;
+    }else{
+        // Check until one bag reaches the end before the other(has more elements || some element is not equal)
+        do{
+            if((it1 == this->end() && it2 != rhs.end()) || (it1 != this->end() && it2 == rhs.end())){
+                equal = false;
+            }else{
+                // Check also the label bc operator== on trie doesn't control if equal
+                equal = *(it1->get_label()) == *(it2->get_label()) && *it1 == *it2;
+                ++it1;
+                ++it2;
+            }
+        }while(equal && it1 != this->end() && it2 != rhs.end());
+    }
+    return equal;
+}
+
+template <typename T>
+bool bag<T>::operator!=(const bag<T>& rhs) const {
+   return !(*this == rhs);
 }

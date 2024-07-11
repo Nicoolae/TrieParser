@@ -99,6 +99,7 @@ template <typename T>
 T const* trie<T>::get_label() const{
     // If not the root
     if(this->m_p){
+        std::cout << *(this->m_l);
         return this->m_l;
     }else{
         return nullptr;
@@ -141,13 +142,23 @@ void print_trie(trie<T> const& t){
     if (t.get_label())  std::cout << *(t.get_label()) << " ";
     if (t.get_parent() && t.get_children().empty()) std::cout << t.get_weight() << " ";
     if(!t.get_children().empty()){
-        std::cout << "children = {\n    ";
-        t.get_children().print_children();
-        if (t.get_parent()){
-            std::cout << "\n    }";
-        }else{
-            std::cout << "\n}";
-        }
+        std::cout << "children = {\n";
+        // t.get_children().print_children();
+        // if (t.get_parent()){
+        //     std::cout << "\n    }";
+        // }else{
+        //     std::cout << "\n}";
+        // }
+         auto it = t.get_children().begin();
+         while(it != t.get_children().end()){
+             std::cout << "    ";
+             print_trie(*it);
+             ++it;
+             if(it != t.get_children().end()){
+                 std::cout << ",\n";
+             }
+         }
+         std::cout << "\n}";
     }else{
          std::cout << "children = {}";
     }
@@ -207,7 +218,7 @@ typename trie<T>::node_iterator trie<T>::node_iterator::operator++(int){
 */
 template <typename T>
 bool trie<T>::node_iterator::operator==(node_iterator const& rhs) const{
-    return *(this->m_ptr) == *(rhs.m_ptr);
+    return this->m_ptr == rhs.m_ptr;
 }
 
 /**
@@ -215,8 +226,8 @@ bool trie<T>::node_iterator::operator==(node_iterator const& rhs) const{
  * @return If not equal
 */
 template <typename T>
-bool trie<T>::node_iterator::operator==(node_iterator const& rhs) const{
-    return *(this->m_ptr) != *(rhs.m_ptr);
+bool trie<T>::node_iterator::operator!=(node_iterator const& rhs) const{
+    return this->m_ptr != rhs.m_ptr;
 }
 
 /** 
@@ -225,11 +236,12 @@ bool trie<T>::node_iterator::operator==(node_iterator const& rhs) const{
  */
 template <typename T>
 typename trie<T>::node_iterator trie<T>::root(){
-    node_iterator root{this};
-    while(root.m_ptr->m_p){
-        ++root;
-    }
-    return root;
+    // node_iterator root{this};
+    // while(root.m_ptr->m_p){
+        // ++root;
+    // }
+    // return root;
+    return  node_iterator{this};
 }
 
 // Const iterator
@@ -286,7 +298,7 @@ typename trie<T>::const_node_iterator trie<T>::const_node_iterator::operator++(i
 */
 template <typename T>
 bool trie<T>::const_node_iterator::operator==(const_node_iterator const& rhs) const{
-    return *(this->m_ptr) == *(rhs.m_ptr);
+    return this->m_ptr == rhs.m_ptr;
 }
 
 /**
@@ -294,8 +306,8 @@ bool trie<T>::const_node_iterator::operator==(const_node_iterator const& rhs) co
  * @return If not equal
 */
 template <typename T>
-bool trie<T>::const_node_iterator::operator==(const_node_iterator const& rhs) const{
-    return *(this->m_ptr) != *(rhs.m_ptr);
+bool trie<T>::const_node_iterator::operator!=(const_node_iterator const& rhs) const{
+    return this->m_ptr != rhs.m_ptr;
 }
 
 /** 
@@ -304,11 +316,7 @@ bool trie<T>::const_node_iterator::operator==(const_node_iterator const& rhs) co
  */
 template <typename T>
 typename trie<T>::const_node_iterator trie<T>::root() const{
-    node_iterator root{this};
-    while(root.m_ptr->m_p){
-        ++root;
-    }
-    return root;
+    return  node_iterator{this};
 }
 
 
@@ -347,10 +355,11 @@ trie<T>::leaf_iterator::leaf_iterator(trie<T>* t){
         // The trie t can be a leaf or any other node
         // If t is a node, so the leaf has to be in his children or in his children' children
         // Check every first child until reach the leaf
-        while(t->m_c.empty()){
+        while(!t->m_c.empty()){
             // t points to the first child
             t = &(*(t->m_c.begin()));
         }
+        this->m_ptr = t;
     }
 }
 
@@ -378,15 +387,40 @@ typename trie<T>::leaf_iterator::pointer trie<T>::leaf_iterator::operator->() co
 */
 template <typename T>
 typename trie<T>::leaf_iterator& trie<T>::leaf_iterator::operator++(){
-    // Get the next child
-    while(!this->m_ptr->m_p->m_c.get_next(*(this->m_ptr))){
+    // trie<T> actual_leaf = this->get_leaf();
+    // // Go to the parent
+    // this->m_ptr = this->m_ptr->m_p;
+    // // Get the next child
+    // while(!this->m_ptr->m_c.get_next(actual_leaf)){
+    //     this->m_ptr = this->m_ptr->m_p;
+    // }
+    // // Once got the next child, instatiate a leaf iterator which will point to the first leaf
+    // // The just steal its pointer
+    // leaf_iterator pivot{this->m_ptr};
+    // this->m_ptr = pivot.m_ptr;
+    // return *this;
+
+
+    // Until found a valid next_leaf or until there are no other children to check
+    trie<T>* next_leaf = nullptr;
+    while(!next_leaf && this->m_ptr->m_p){
+        trie<T> actual_leaf = this->get_leaf();
+        auto it = this->m_ptr->m_p->m_c.begin();
+        bool found = false;
+        while(!found){
+            if((*it).get_label() == actual_leaf.get_label() && *it == actual_leaf){
+                found = true;
+            }
+            ++it;
+        }
+        if(found && (*it)){
+            next_leaf = &(*it);
+        }
+        // Go to the father
         this->m_ptr = this->m_ptr->m_p;
     }
-    // Once got the next child, instatiate a leaf iterator which will point to the first leaf
-    // The just steal its pointer
-    leaf_iterator pivot{this->m_ptr};
-    this->m_ptr = pivot.m_ptr;
-    return *this;
+    this->m_ptr = next_leaf;
+    // TODO test
 }
 
 /**
@@ -413,7 +447,7 @@ typename trie<T>::leaf_iterator trie<T>::leaf_iterator::operator++(int){
 */
 template <typename T>
 bool trie<T>::leaf_iterator::operator==(leaf_iterator const& rhs) const{
-    return *(this->m_ptr) == *(rhs.m_ptr);
+    return this->m_ptr == rhs.m_ptr;
 }
 
 /**
@@ -422,7 +456,7 @@ bool trie<T>::leaf_iterator::operator==(leaf_iterator const& rhs) const{
 */
 template <typename T>
 bool trie<T>::leaf_iterator::operator!=(leaf_iterator const& rhs) const{
-    return *(this->m_ptr) != *(rhs.m_ptr);
+    return this->m_ptr != rhs.m_ptr;
 }
 
 /**
@@ -546,7 +580,7 @@ typename trie<T>::const_leaf_iterator trie<T>::const_leaf_iterator::operator++(i
 */
 template <typename T>
 bool trie<T>::const_leaf_iterator::operator==(const_leaf_iterator const& rhs) const{
-    return *(this->m_ptr) == *(rhs.m_ptr);
+    return this->m_ptr == rhs.m_ptr;
 }
 
 /**
@@ -555,7 +589,7 @@ bool trie<T>::const_leaf_iterator::operator==(const_leaf_iterator const& rhs) co
 */
 template <typename T>
 bool trie<T>::const_leaf_iterator::operator!=(const_leaf_iterator const& rhs) const{
-    return *(this->m_ptr) != *(rhs.m_ptr);
+    return this->m_ptr != rhs.m_ptr;
 }
 
 /**
@@ -600,4 +634,26 @@ typename trie<T>::const_leaf_iterator trie<T>::end() const{
 }
 
 // TODO OPERATOR == e testing iteratori
+template <typename T>
+bool trie<T>::operator==(trie<T> const& rhs) const{
+    // Two tries are equal if: 
+    // - 2 leaves(=>no children) && same weight
+    // - Have same children 
+    if(this->m_c.empty() && rhs.m_c.empty()){
+        return this->m_w == rhs.m_w;
+    }else{
+        return this->m_c == rhs.m_c;
+    }
+}
 
+template <typename T>
+bool trie<T>::operator!=(trie<T> const& rhs) const{
+    // Two tries are equal if: 
+    // - 2 leaves(=>no children) && not same weight
+    // - Not same children 
+    if(this->m_c.empty() && rhs.m_c.empty()){
+        return this->m_w != rhs.m_w;
+    }else{
+        return this->m_c != rhs.m_c;
+    }
+}
