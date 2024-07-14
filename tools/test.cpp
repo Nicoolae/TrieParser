@@ -1,5 +1,6 @@
 #include <iostream>
-#include <string>
+//#include <string>
+#include <fstream>
 #include "../src/trie.cpp"
 
 template <typename T>
@@ -140,7 +141,7 @@ int main(){
     // std::cout << std::endl;
     // print_trie(t_p_2);
        //print_trie(t_3);
-       std::cout << boss;
+      // std::cout << boss.max();
     // std::cout << std::endl;
     //  std::vector<std::string> s = {"2due", "d"};
     //   //print_trie(boss[s]);
@@ -202,5 +203,30 @@ int main(){
     // it = t_c_2_2.begin();
     // print_trie(it.get_leaf());
     // std::cout << " | Label: " << *it << std::endl;
+    // int c = '1';
+    // std::cout << (int) c << std::endl;
+
+
+
+
+    // Operator >>
+    // std::ifstream inputFile("datasets/test_leaf_ok.tr");
+    // try{
+    //     inputFile >> t_3;
+    //     std::cout << t_3;
+    // }catch(parser_exception e){
+    //     std::cerr << e.what() << '\n';
+    // }
+
+    std::ifstream inputFile("datasets/trie_string.tr");
+    trie<std::string> t_o;
+    try{
+        inputFile >> t_o;
+        std::cout << t_o;
+    }catch(parser_exception e){
+        std::cerr << e.what() << '\n';
+    }
+    std::cout << "MAX LEAF: "<< std::endl;
+    std::cout << t_o.max();
 }
 

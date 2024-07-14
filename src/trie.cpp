@@ -807,7 +807,9 @@ template <typename T>
 std::ostream& print_indented(std::ostream& os, trie<T> const& actual, trie<T> const& father){
     if(actual.get_parent() && actual.get_children().empty()){ // Leaf
         os << *(actual.get_label()) << " " << actual.get_weight() << " ";
-    }else if(actual.get_parent() && !actual.get_children().empty()){ // Node with children
+    }else if(!actual.get_parent() && actual.get_children().empty()){ // Leaf as root
+       os << actual.get_weight() << " ";
+    }else if(actual.get_parent() && !actual.get_children().empty()){
         os << *(actual.get_label()) << " ";
     }
 
@@ -851,3 +853,149 @@ std::ostream& insert_tabs(std::ostream& os, trie<T> const& actual, trie<T> const
     }
     return os;
 }
+
+/* Puts the next character in the first position without any spaces */
+void skip_blank_spaces(std::istream& is) {
+    char c = 0;
+    // Operator >> consume all the non-valid chars
+    is >> c;
+    is.putback(c);
+}
+
+/**
+ * Parse a LEAF -> WEIGHT children = {}
+ * @param is the stream to read from
+ * @param t the trie to be written
+ * @return the created trie(leaf)
+*/
+template <typename T>
+void leaf(std::istream& is, trie<T>& t){
+    skip_blank_spaces(is);
+    // Try to parse the weight
+    double weight = 0.0;
+    is >> weight;
+    if(is.fail()){ // The value in the is isn't parsed as double, goes in fail
+        throw parser_exception{"The weight can't be parsed as double"};
+    }else{ // Parsed
+        // Try to read children = {}
+        std::string s = "";
+        is >> s;
+        if (s != "children") throw parser_exception{"Expected keyword 'children'"};
+        skip_blank_spaces(is);
+        char c = 0;
+        is >> c;
+        if (c != '=') throw parser_exception{"Expected keyword '='"};
+        skip_blank_spaces(is);
+        is >> c;
+        if (c != '{') throw parser_exception{"Expected keyword '{'"};
+        skip_blank_spaces(is);
+        is >> c;
+        if (c != '}') throw parser_exception{"Expected keyword '}'"};
+        t = trie<T>{weight};
+    }
+}
+
+/**
+ * Parse a NODE from an input stream
+ * @param is the stream to read from
+ * @param t the trie to be written
+ * @return the created trie
+*/
+template <typename T>
+void node(std::istream& is, trie<T>& t){
+    skip_blank_spaces(is);
+    // Any node has the label, try to parse it
+    T label;
+    is >> label;
+    //std::cout << label;
+    skip_blank_spaces(is);
+    if(is.fail()){ // The label in the is isn't parsed as T, goes in fail
+        throw parser_exception{"The label can't be parsed as type T"};
+    }else if(is.peek() >= 48 && is.peek() <= 57){ // Leaf
+        // TODO occhio al fatto che magari trie può avere già qualcosa dentro
+        trie<T> leaf_to_add;
+        leaf(is, leaf_to_add);
+        leaf_to_add.set_label(&label);
+        leaf_to_add.set_parent(&t);
+        t.add_child(leaf_to_add);
+    }else{ // NODE
+        // Try to read children = {NODE}
+        std::string s = "";
+        is >> s;
+        if (s != "children") throw parser_exception{"Expected keyword 'children'"};
+        skip_blank_spaces(is);
+        char c = 0;
+        is >> c;
+        if (c != '=') throw parser_exception{"Expected keyword '='"};
+        skip_blank_spaces(is);
+        is >> c;
+        if (c != '{') throw parser_exception{"Expected keyword '{'"};
+        
+        trie<T> node_to_add;
+        node(is, node_to_add);
+        node_to_add.set_label(&label);
+        node_to_add.set_parent(&t);
+        t.add_child(node_to_add);
+        
+        skip_blank_spaces(is);
+        is >> c;
+        if (c != '}') throw parser_exception{"Expected keyword '}'"};
+    }
+
+    // Check for NODE, NODE
+    skip_blank_spaces(is);
+    char c = 0;
+    is >> c;
+    if(c == ','){
+        node(is, t);
+    }else{
+        is.putback(c);
+    }
+
+}
+
+// Read from stream
+/**
+ * Parse the data from a stream in the passed trie
+ * @param is the stream to read from
+ * @param t the trie to be written
+ * @return is read 
+ * Used CFG to parse:
+ * ROOT(FIRST TRIE) -> LEAF | children = {NODE}
+ * NODE -> LABEL LEAF | LABEL children = {NODE} | NODE, NODE
+ * LEAF -> WEIGHT children = {}
+ * LABEL -> any unseparated data of type T;
+ * WEIGHT -> any double;
+ */
+template <typename T>
+std::istream& operator>>(std::istream& is, trie<T>& t){
+    skip_blank_spaces(is);
+    char c = is.peek();
+    if((int) c >= 48 && (int) c <= 57){ // Root has to be parsed as a LEAF(first case in CFG ROOT)
+        leaf(is, t);
+    }else{ // Node
+        // Try to read children = {NODE}
+        std::string s = "";
+        is >> s;
+        if (s != "children") throw parser_exception{"Expected keyword 'children'"};
+        skip_blank_spaces(is);
+        is >> c;
+        if (c != '=') throw parser_exception{"Expected keyword '='"};
+        skip_blank_spaces(is);
+        is >> c;
+        if (c != '{') throw parser_exception{"Expected keyword '{'"};
+        
+        node(is, t);
+        
+        skip_blank_spaces(is);
+        is >> c;
+        if (c != '}') throw parser_exception{"Expected keyword '}'"};
+    }
+
+    // Make sure reached the end of file
+    skip_blank_spaces(is);
+    if(is.peek() != EOF) throw parser_exception{"Unexpected char detected"};
+    return is;
+}
+
+
