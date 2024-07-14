@@ -1,5 +1,7 @@
 #include "trie.hpp"  // It is forbidden to include other libraries!
 
+// Constructors
+
 /** Default constructor */
 template <typename T>
 trie<T>::trie()
@@ -24,24 +26,31 @@ trie<T>::trie(double weight)
 
 /** Copy constructor */
 template <typename T>
-trie<T>::trie(trie<T> const& rhs){
+trie<T>::trie(trie<T> const& rhs)
+    : m_c(rhs.m_c){
     this->m_p = rhs.m_p;
-    if (rhs.m_l) m_l = new T{*(rhs.m_l)};
+    if(rhs.m_l){
+        this->m_l = new T{*(rhs.m_l)};
+    }else{
+        this->m_l = nullptr;
+    } 
     this->m_w = rhs.m_w;
     this->m_c = rhs.m_c;
+    // Update the children' father with actual one
+    this->m_c.update_parent(this);
 }
 
 /** Move constructor */
 template <typename T>
-trie<T>::trie(trie<T>&& rhs){
-    std::cout << "AOO";
+trie<T>::trie(trie<T>&& rhs)
+    :m_c(std::move(rhs.m_c)){
     this->m_p = rhs.m_p;
     this->m_l = rhs.m_l;
-    this->m_w = rhs.m_w;
-    this->m_c = rhs.m_c;
-
-    rhs.m_p = nullptr;
     rhs.m_l = nullptr;
+    this->m_w = rhs.m_w;
+
+    // Update the children' father with actual one
+    this->m_c.update_parent(this);
 }
 
 /** Assignment operator overloaded */
@@ -50,6 +59,8 @@ trie<T>& trie<T>::operator=(trie<T> const& rhs){
     // Copy only children and weight
     this->m_w = rhs.m_w;
     this->m_c = rhs.m_c;
+    // Update the children' father with actual one
+    this->m_c.update_parent(this);
     return *this;
 }
 
@@ -58,7 +69,9 @@ template <typename T>
 trie<T>& trie<T>::operator=(trie<T>&& rhs){
     // Copy only children and weight
     this->m_w = rhs.m_w;
-    this->m_c = rhs.m_c;
+    this->m_c = std::move(rhs.m_c);
+    // Update the children' father with actual one
+    this->m_c.update_parent(this);
     return *this;
 }
 
@@ -99,7 +112,6 @@ template <typename T>
 T const* trie<T>::get_label() const{
     // If not the root
     if(this->m_p){
-        std::cout << *(this->m_l);
         return this->m_l;
     }else{
         return nullptr;
@@ -126,7 +138,7 @@ trie<T> const* trie<T>::get_parent() const{
 template <typename T>
 void trie<T>::add_child(trie<T> const& c){
     // If the element can't be added, this happens only if there is a child with some label
-    if (!this->m_c.add_ordered(c)){
+    if (!this->m_c.add_ordered(c, this)){
         throw parser_exception{"There is already a child with same label"};
     }
 }
@@ -139,6 +151,7 @@ bag<trie<T>> const& trie<T>::get_children() const {
 
 template <typename T>
 void print_trie(trie<T> const& t){
+    std::cout << "M_I: " << &t << "| P_I: " << t.get_parent() << " | ";
     if (t.get_label())  std::cout << *(t.get_label()) << " ";
     if (t.get_parent() && t.get_children().empty()) std::cout << t.get_weight() << " ";
     if(!t.get_children().empty()){
@@ -227,6 +240,7 @@ bool trie<T>::node_iterator::operator==(node_iterator const& rhs) const{
 */
 template <typename T>
 bool trie<T>::node_iterator::operator!=(node_iterator const& rhs) const{
+    std::cout << this->m_ptr << " != " << rhs.m_ptr << std::endl;
     return this->m_ptr != rhs.m_ptr;
 }
 
@@ -277,7 +291,9 @@ typename trie<T>::const_node_iterator::pointer trie<T>::const_node_iterator::ope
 */
 template <typename T>
 typename trie<T>::const_node_iterator& trie<T>::const_node_iterator::operator++(){
-    this->m_ptr = this->m_ptr->m_p;
+    if(this->m_ptr){
+        this->m_ptr = this->m_ptr->m_p;
+    }
     return *this;
 }
 
@@ -307,6 +323,7 @@ bool trie<T>::const_node_iterator::operator==(const_node_iterator const& rhs) co
 */
 template <typename T>
 bool trie<T>::const_node_iterator::operator!=(const_node_iterator const& rhs) const{
+        //std::cout << this->m_ptr << " != " << rhs.m_ptr << std::endl;
     return this->m_ptr != rhs.m_ptr;
 }
 
@@ -316,7 +333,7 @@ bool trie<T>::const_node_iterator::operator!=(const_node_iterator const& rhs) co
  */
 template <typename T>
 typename trie<T>::const_node_iterator trie<T>::root() const{
-    return  node_iterator{this};
+    return  const_node_iterator{this};
 }
 
 
@@ -387,6 +404,52 @@ typename trie<T>::leaf_iterator::pointer trie<T>::leaf_iterator::operator->() co
 */
 template <typename T>
 typename trie<T>::leaf_iterator& trie<T>::leaf_iterator::operator++(){
+    //std::cout << "\nOperator++" << std::endl;
+    trie<T>* next_leaf = nullptr;
+    // Search the next leaf in the children until find a valid one or reach the root
+    while(!next_leaf && this->m_ptr->m_p){
+    //     next_leaf = this->m_ptr->m_p->m_c.get_next(&(this->get_leaf()));
+    //     // Go to the father
+    //     this->m_ptr = this->m_ptr->m_p;
+    // }
+        trie<T> actual_leaf = this->get_leaf();
+        auto it = this->m_ptr->m_p->m_c.begin();
+        bool found = false;
+        while(!found && it != this->m_ptr->m_p->m_c.end()){
+            //std::cout << "ACTUAL" << std::endl;
+            //print_trie(actual_leaf);
+            //std::cout << std::endl;
+            //std::cout << "POINTED BY ITERATOR: " << std::endl;
+            //print_trie(*it);
+            //std::cout << std::endl;
+            if(*((*it).get_label()) == *(actual_leaf.get_label()) && *it == actual_leaf){
+           // std::cout << "FOUND" << std::endl;
+                found = true;
+            }
+            ++it;
+        }
+        if(found && (it != this->m_ptr->m_p->m_c.end())){
+            next_leaf = &(*it);
+        }
+       // std::cout << "NEXT_LEAF:" << std::endl;   
+        //if(next_leaf){
+        //    print_trie(*next_leaf);
+        //}//else{
+         //   std::cout << "NULL" << std::endl;
+       // }
+        // Go to the father
+        this->m_ptr = this->m_ptr->m_p;
+    } 
+
+    if(!next_leaf || next_leaf->m_c.empty()){
+        this->m_ptr = next_leaf;
+    }else{
+        leaf_iterator pivot{next_leaf};
+        this->m_ptr = pivot.m_ptr;
+    }
+
+    // print_trie(*(this->m_ptr->m_p));
+    // trie<T> actual_leaf = this->get_leaf();
     // trie<T> actual_leaf = this->get_leaf();
     // // Go to the parent
     // this->m_ptr = this->m_ptr->m_p;
@@ -402,24 +465,28 @@ typename trie<T>::leaf_iterator& trie<T>::leaf_iterator::operator++(){
 
 
     // Until found a valid next_leaf or until there are no other children to check
-    trie<T>* next_leaf = nullptr;
-    while(!next_leaf && this->m_ptr->m_p){
-        trie<T> actual_leaf = this->get_leaf();
-        auto it = this->m_ptr->m_p->m_c.begin();
-        bool found = false;
-        while(!found){
-            if((*it).get_label() == actual_leaf.get_label() && *it == actual_leaf){
-                found = true;
-            }
-            ++it;
-        }
-        if(found && (*it)){
-            next_leaf = &(*it);
-        }
-        // Go to the father
-        this->m_ptr = this->m_ptr->m_p;
-    }
-    this->m_ptr = next_leaf;
+    // trie<T>* next_leaf = nullptr;
+    // while(!next_leaf && this->m_ptr->m_p){
+    //     trie<T> actual_leaf = this->get_leaf();
+    //     print_trie(actual_leaf);
+    //     auto it = this->m_ptr->m_p->m_c.begin();
+    //     bool found = false;
+    //     while(!found && it != this->m_ptr->m_p->m_c.end()){
+    //         if((*it).get_label() == actual_leaf.get_label() && *it == actual_leaf){
+    //             found = true;
+    //         }
+    //         ++it;
+    //     }
+    //     if(found && (it != this->m_ptr->m_p->m_c.end())){
+    //     //std::cout << "A" << std::endl;
+    //         next_leaf = &(*it);
+    //     }
+    //     // print_trie(next_leaf->m_w);
+    //     // Go to the father
+    //     this->m_ptr = this->m_ptr->m_p;
+    // }
+    // this->m_ptr = next_leaf;
+    return *this;
     // TODO test
 }
 
@@ -474,7 +541,11 @@ trie<T>::leaf_iterator::operator node_iterator() const{
 */
 template <typename T>
 trie<T>& trie<T>::leaf_iterator::get_leaf() const{
-    return *(this->m_ptr);
+    if(this->m_ptr){
+        return *(this->m_ptr);
+    }else{
+        throw parser_exception{"No leaf pointed"};
+    }
 }
 
 /**
@@ -492,9 +563,47 @@ typename trie<T>::leaf_iterator trie<T>::begin(){
 */
 template <typename T>
 typename trie<T>::leaf_iterator trie<T>::end(){
-    // The next of last leaf is the first of the next node of trie parent of this
-    if(this->m_p->m_c->get_next(&(*this))){
-        return {this->m_p->m_c->get_next(&(*this))};
+    trie<T>* next_leaf = nullptr;
+    // The end leaf is the first one of the next node so go at the father and reach the next node of this
+    if(this->m_p){
+         trie<T>* father_leaf = this->m_p;
+         trie<T>* actual_leaf = this;
+    // Search the next leaf in the children until find a valid one or reach the root
+    while(!next_leaf && father_leaf){
+    //     next_leaf = this->m_ptr->m_p->m_c.get_next(&(this->get_leaf()));
+    //     // Go to the father
+    //     this->m_ptr = this->m_ptr->m_p;
+    // }
+        //trie<T> actual_leaf = this->get_leaf();
+        auto it = father_leaf->m_c.begin();
+        bool found = false;
+        while(!found && it != father_leaf->m_c.end()){
+            //std::cout << "ACTUAL" << std::endl;
+            //print_trie(actual_leaf);
+            //std::cout << std::endl;
+            //std::cout << "POINTED BY ITERATOR: " << std::endl;
+            //print_trie(*it);
+            //std::cout << std::endl;
+            if(*((*it).get_label()) == *(actual_leaf->get_label()) && *it == *actual_leaf){
+           // std::cout << "FOUND" << std::endl;
+                found = true;
+            }
+            ++it;
+        }
+        if(found && (it != father_leaf->m_c.end())){
+            next_leaf = &(*it);
+        }
+       // std::cout << "NEXT_LEAF:" << std::endl;   
+        //if(next_leaf){
+        //    print_trie(*next_leaf);
+        //}//else{
+         //   std::cout << "NULL" << std::endl;
+       // }
+        // Go to the father
+        actual_leaf = actual_leaf->m_p;
+        father_leaf = actual_leaf->m_p;
+    }
+    return {next_leaf};
     }else{
         return {nullptr};
     }
@@ -656,4 +765,185 @@ bool trie<T>::operator!=(trie<T> const& rhs) const{
     }else{
         return this->m_c != rhs.m_c;
     }
+}
+
+/**
+ * Returns the leaf with max weight
+ * @return The leaf with max weight
+*/
+template <typename T>
+trie<T>& trie<T>::max(){
+    leaf_iterator it{this};
+    trie<T>* max = &(this->begin().get_leaf());
+    ++it;
+    while (it != this->end()){
+        if(it.get_leaf().m_w > max->m_w){
+            max = &(it.get_leaf());
+        }
+        ++it;
+    }
+    return *max;
+}
+
+/**
+ * Returns the leaf with max weight
+ * @return The leaf with max weight
+*/
+template <typename T>
+trie<T> const& trie<T>::max() const{
+    leaf_iterator it{this};
+    trie<T>* max = &(this->begin().get_leaf());
+    ++it;
+    while (it != this->end()){
+        if(it.get_leaf().m_w > max->m_w){
+            max = &(it.get_leaf());
+        }
+        ++it;
+    }
+    return *max;
+}
+
+/**
+ * Returns a reference to trie reached using the sequence
+ * @param s The sequence with the labels
+ * @return The reference to the reached trie
+*/
+template <typename T>
+trie<T>& trie<T>::operator[](std::vector<T> const& s){
+    trie<T>* reached_trie = this;
+    /** Index of the next label to search */
+    long unsigned int next_label = 0;
+    bool contains_label = true;
+    while(contains_label && next_label < s.size()){
+        // Search if there is a children with the label_searched
+        auto it = reached_trie->m_c.begin();
+        bool found = false;
+        while (!found && it != reached_trie->m_c.end()){
+            if(*((*it).get_label()) == s.at(next_label)){
+                found = true;
+            }else{
+                ++it;
+            }
+        }
+        if(!found){
+            contains_label = false;
+        }else{
+            reached_trie = &(*it);
+            next_label++;
+        }
+    }
+    return (*reached_trie);
+}
+
+/**
+ * Returns a reference to trie reached using the sequence
+ * @param s The sequence with the labels
+ * @return The reference to the reached trie
+*/
+template <typename T>
+trie<T> const& trie<T>::operator[](std::vector<T> const& s) const{
+    trie<T>* reached_trie = this;
+    /** Index of the next label to search */
+    long unsigned int next_label = 0;
+    bool contains_label = true;
+    while(contains_label && next_label < s.size()){
+        // Search if there is a children with the label_searched
+        auto it = this->m_c.begin();
+        bool found = false;
+        while (!found && it != this->m_c.end()){
+            if(*((*it).get_label()) == s.at(next_label)){
+                found = true;
+            }
+            ++it;
+        }
+        if(!found){
+            contains_label = false;
+        }else{
+            reached_trie = &(*it);
+            next_label++;
+        }
+    }
+    return *reached_trie;
+}
+
+template <typename T>
+std::ostream& operator<<(std::ostream& os, trie<T> const& t){
+    // if (t.get_label())  os << *(t.get_label()) << " ";
+    // if (t.get_parent() && t.get_children().empty()) std::cout << t.get_weight() << " ";
+    // if(!t.get_children().empty()){
+    //     std::cout << "children = {\n";
+    //     auto it = t.get_children().begin();
+    //     while(it != t.get_children().end()){
+    //          std::cout << "    ";
+    //          print_trie(*it);
+    //          ++it;
+    //         //  if(it != t.get_children().end()){
+    //         //      std::cout << ",\n";
+    //         //  }
+    //      }
+    //      std::cout << "\n}";
+    // }else{
+    //      std::cout << "children = {}";
+    // }
+    print_indented(os, t, t);
+    return os;
+}
+
+template <typename T>
+std::ostream& print_indented(std::ostream& os, trie<T> const& actual, trie<T> const& father){
+    // typename trie<T>::const_node_iterator it{&actual};
+    // std::cout << *(father.root()) << " ||||";
+    // // while(it != father.root()){
+    // //     os << "    ";
+    // //     // Go up
+    // //     ++it;
+    // // }
+
+    if(actual.get_parent() && actual.get_children().empty()){ // Leaf
+        os << *(actual.get_label()) << " " << actual.get_weight() << " ";
+    }else if(actual.get_parent() && !actual.get_children().empty()){ // Node with children
+        os << *(actual.get_label()) << " ";
+    }
+
+    if(actual.get_children().empty()){
+        os << "children = {}";
+    }else{
+        os << "children = {\n";
+        // Write the children using iterators
+        auto it = actual.get_children().begin();
+        while(it != actual.get_children().end()){
+            insert_tabs(os, *it, father);
+            print_indented(os, *it, father);
+            // Check next
+            if(++it != actual.get_children().end()){
+                os << ",\n";
+            }
+        }
+        os << "\n";
+        insert_tabs(os, actual, father);
+        os << "}";
+    }
+
+    return os;
+}
+
+
+/**
+ * Insert tabs on output stream
+ * @param os the output stream to write on
+ * @param t trie that has to be written after some tabs depending on which child it is
+ * @return written os
+*/
+template <typename T>
+std::ostream& insert_tabs(std::ostream& os, trie<T> const& actual, trie<T> const& father){
+    typename trie<T>::const_node_iterator it{&actual};
+    // std::cout << *(father.root()) << " ||||";
+    // std::cout << *(++it) << " ----";
+    // std::cout << ((++it) != father.root()) << " ----";
+     while(it != father.root()){
+         os << "    ";
+         // Go up
+         ++it;
+     }
+    return os;
 }

@@ -21,15 +21,18 @@ struct bag{
 
     public:
         bag();
+        bag(const bag<T>&);
+        bag(bag<T>&&);
         ~bag();
         bool empty() const;
         bag<T>& operator=(bag<T> const&);
         bag<T>& operator=(bag<T>&&);
-        bool add_ordered(T const&);
+        bool add_ordered(T const&, T*);
         void print_children() const;
-        T* get_next(const T&);
+        T* get_next(T*);
         bool operator==(const bag<T>& rhs) const;
         bool operator!=(const bag<T>& rhs) const;
+        void update_parent(T*);
         
 
         // Iterators
@@ -89,6 +92,30 @@ bag<T>::bag(){
     this->m_front = this->m_back = nullptr;
 }
 
+/** Copy constructor */
+template <typename T>
+bag<T>::bag(const bag<T>& rhs){
+    // Empty list
+    this->m_front = this->m_back = nullptr;
+    // Copy from rhs
+    Node* ptr = rhs.m_front;
+    while (ptr){
+        push_back(ptr->val);
+        ptr = ptr->next;
+    }
+}
+
+/** Move constructor */
+template <typename T>
+bag<T>::bag(bag<T>&& rhs){
+    // Empty list
+    this->m_front = rhs.m_front;
+    this->m_back = rhs.m_back;
+
+    rhs.m_front = nullptr;
+    rhs.m_back = nullptr;
+}
+
 /** Destructor */
 template <typename T>
 bag<T>::~bag(){
@@ -117,6 +144,7 @@ bag<T>& bag<T>::operator=(bag<T> const& rhs){
 /** Move assignment operator */
 template <typename T>
 bag<T>& bag<T>::operator=(bag<T>&& rhs){
+    std::cout << "MOVE";
     if (this == &rhs){
         return *this;
     }else{
@@ -194,7 +222,7 @@ bool bag<T>::contains_equal_label(T const& val){
  * @return - If child was added or not
  */
 template <typename T>
-bool bag<T>::add_ordered(T const& val){
+bool bag<T>::add_ordered(T const& val, T* father){
     if (!empty()){
         // if (ptr->val.get_label() == val.get_label()){ // Same label(->can't add a child with same label)
         //     return false;
@@ -231,9 +259,16 @@ bool bag<T>::add_ordered(T const& val){
             return false;
         }else if (*(val.get_label()) < *(m_front->val.get_label())){ // Add in front
             push_front(val);
+            std::cout << "BEFORE: " << this->m_front->val.get_parent();
+            this->m_front->val.set_parent(father);
+            std::cout << "| AFTER: " << this->m_front->val.get_parent();
             return true;
         }else if (*(val.get_label()) > *(m_back->val.get_label())){ // Add at the end
+            // TODO aggiungere solo in base a <
             push_back(val);
+            // std::cout << "BEFORE: " << this->m_back->val.get_parent();
+            this->m_back->val.set_parent(father);
+            //std::cout << "| AFTER: " << this->m_back->val.get_parent();
             return true;
         }else{
             while (ptr->next && !equal_label && !added){
@@ -242,6 +277,9 @@ bool bag<T>::add_ordered(T const& val){
                 }else if(*(ptr->next->val.get_label()) > *(val.get_label())){ // If next is >, has to add before it this element
                     added = true;
                     Node* new_next = new Node{val, ptr->next};
+                     std::cout << "BEFORE: " << new_next->val.get_parent();
+                    new_next->val.set_parent(father);
+            std::cout << "| AFTER: " << new_next->val.get_parent();
                     ptr->next = new_next;
                 }else{
                     ptr = ptr->next;
@@ -252,23 +290,22 @@ bool bag<T>::add_ordered(T const& val){
         }
     }else{
         push_front(val);
+        this->m_front->val.set_parent(father);
         return true;
     }
 }
 
+/**
+ * Update the parent of the children
+*/
 template <typename T>
-void bag<T>::print_children() const{
-     Node* ptr = m_front;
-     while (ptr){
-         print_trie(ptr->val);
-         if (ptr->next) std::cout << ",\n    ";
-         ptr = ptr->next;
-     }
-    // for(auto it = begin(); it != end(); ++it){
-    //     print_trie(*it);
-    //     if(it)
-    // }
+void bag<T>::update_parent(T* parent){
+    for(auto it = begin(); it != end(); ++it){
+        (*it).set_parent(parent);
+    }
 }
+
+
 
 // Iterator
 
@@ -351,25 +388,6 @@ typename bag<T>::const_iterator bag<T>::begin() const{
 template <typename T>
 typename bag<T>::const_iterator bag<T>::end() const{
     return {nullptr};
-}
-
-/**
- * Returns the next children if have
- * @param from the actual trie whose next has to be returned
- * @return The next element of the passed trie 
-*/
-template <typename T>
-T* bag<T>::get_next(const T& from){
-    auto it = begin();
-    std::cout << "AO";
-    while (it != end() && ((*it).get_label() != from.get_label() || (*it) != from)){
-        ++it;
-    }
-    if (it == end()){
-        return nullptr;
-    }else{
-        return &(*(++it));
-    }
 }
 
 // Comparison

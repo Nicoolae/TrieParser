@@ -64,8 +64,18 @@ int main(){
     trie<std::string> t_c_2_2_1{4.0};
     trie<std::string> t_c_2_2_2{5.0};
 
+    trie<std::string> boss;
+    t_p_1.set_parent(&boss);
+    t_p_2.set_parent(&boss);
+    std::string* a = new std::string{"1uno"};
+    t_p_1.set_label(a);
+    delete a;
+     a = new std::string{"2due"};
+    t_p_2.set_label(a);
+    delete a;
+
     t_c_1_1.set_parent(&t_p_1);
-    std::string* a = new std::string{"a"};
+     a = new std::string{"a"};
     t_c_1_1.set_label(a);
     delete a;
 
@@ -104,28 +114,52 @@ int main(){
         //t_c_1_1 = t_p_2;
 
         t_p_1.add_child(t_c_1_1);
-        t_p_1.add_child(t_c_1_2);       
+        t_p_1.add_child(t_c_1_2);  
+
+        boss.add_child(t_p_1);
+        boss.add_child(t_p_2);
     }catch(parser_exception e){
         std::cerr << e.what() << '\n';
         return 1;
     }
 
     // Copy constructor
-    //trie<std::string> t_3{t_p_1};
+    // auto it = trie<std::string>::leaf_iterator{&t_c_1_1};
+    // ++it;
+    // trie<std::string> t_3 = it.get_leaf();
 
     // Move constructor
     // trie<std::string> t_3 = foo(t_p_1);
 
     // Move assignment operator
-    // trie<std::string> t_3;
+     trie<std::string> t_3;
     // std::cout << "AOO2";
-    // t_3 = foo(t_p_1);
+     //t_3 = foo(t_p_1);
 
-    print_trie(t_p_1);
-    std::cout << std::endl;
-    print_trie(t_p_2);
-    std::cout << std::endl;
-    //print_trie(t_3);
+    // print_trie(t_p_1);
+    // std::cout << std::endl;
+    // print_trie(t_p_2);
+       //print_trie(t_3);
+       std::cout << boss;
+    // std::cout << std::endl;
+    //  std::vector<std::string> s = {"2due", "d"};
+    //   //print_trie(boss[s]);
+    // std::cout << boss[s];
+//
+
+    // trie<std::string> boss;
+    // t_p_1.set_parent(&boss);
+    // t_p_2.set_parent(&boss);
+    // a = new std::string{"1uno"};
+    // t_p_1.set_label(a);
+    // delete a;
+    //  a = new std::string{"2due"};
+    // t_p_2.set_label(a);
+    // delete a;
+    // boss.add_child(t_p_1);
+    // boss.add_child(t_p_2);
+    // print_trie(boss);
+
 
     // Operator ==
     //std::cout << (t_c_2_1 != t_c_2_2) << std::endl;
@@ -138,16 +172,35 @@ int main(){
     // std::cout << std::endl;
 
     // Leaf iterator
-    auto it = trie<std::string>::leaf_iterator{&t_p_2};
-    ++it;
-    print_trie(it.get_leaf());
-    std::cout << " | Label: " << *it << std::endl;
-    
-    it = t_p_1.begin();
-    print_trie(it.get_leaf());
-    std::cout << " | Label: " << *it << std::endl;
+    //   auto it = trie<std::string>::leaf_iterator{&boss};
+    //    ++it;
+    //    ++it;
+    //    ++it;
+    //    for(      auto it = trie<std::string>::leaf_iterator{&boss}; it!=boss.end(); ++it){
+    //         try{
+    //     // print_trie(t_c_2_2.end().get_leaf());
+    //   print_trie(it.get_leaf());
+    // }catch(parser_exception e){
+    //     std::cerr << e.what() << '\n';
+    // }
+    //    }
 
-    it = t_c_2_2.begin();
-    print_trie(it.get_leaf());
-    std::cout << " | Label: " << *it << std::endl;
+    // try{
+    //     // print_trie(t_c_2_2.end().get_leaf());
+    //   print_trie(it.get_leaf());
+    // }catch(parser_exception e){
+    //     std::cerr << e.what() << '\n';
+    // }
+
+    //print_trie(it.get_leaf());
+    // std::cout << " | Label: " << *it << std::endl;
+    
+    // it = t_p_1.begin();
+    // print_trie(it.get_leaf());
+    // std::cout << " | Label: " << *it << std::endl;
+
+    // it = t_c_2_2.begin();
+    // print_trie(it.get_leaf());
+    // std::cout << " | Label: " << *it << std::endl;
 }
+
