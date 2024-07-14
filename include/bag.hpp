@@ -17,7 +17,6 @@ struct bag{
         void pop_front();
         void push_front(T const&);
         void push_back(T const&);
-        bool contains_equal_label(T const&);
 
     public:
         bag();
@@ -122,6 +121,8 @@ bag<T>::~bag(){
     while (!empty()) pop_front();
 }
 
+// Assignment operators
+
 /** Copy assignment operator */
 template <typename T>
 bag<T>& bag<T>::operator=(bag<T> const& rhs){
@@ -144,7 +145,6 @@ bag<T>& bag<T>::operator=(bag<T> const& rhs){
 /** Move assignment operator */
 template <typename T>
 bag<T>& bag<T>::operator=(bag<T>&& rhs){
-    std::cout << "MOVE";
     if (this == &rhs){
         return *this;
     }else{
@@ -158,6 +158,40 @@ bag<T>& bag<T>::operator=(bag<T>&& rhs){
     return *this;
 }
 
+// Comparison
+
+template <typename T>
+bool bag<T>::operator==(const bag<T>& rhs) const {
+    bool equal = true;
+    auto it1 = this->begin();
+    auto it2 = rhs.begin();
+    // Two bags are equal when:
+    // - Are both empty
+    // - Children have same attributes
+    if(this->empty() && rhs.empty()){ // Both are empty
+        return true;
+    }else{
+        // Check until one bag reaches the end before the other(has more elements || some element is not equal)
+        do{
+            if((it1 == this->end() && it2 != rhs.end()) || (it1 != this->end() && it2 == rhs.end())){
+                equal = false;
+            }else{
+                // Check also the label bc operator== on trie doesn't control if equal
+                equal = *(it1->get_label()) == *(it2->get_label()) && *it1 == *it2;
+                ++it1;
+                ++it2;
+            }
+        }while(equal && it1 != this->end() && it2 != rhs.end());
+    }
+    return equal;
+}
+
+template <typename T>
+bool bag<T>::operator!=(const bag<T>& rhs) const {
+   return !(*this == rhs);
+}
+
+// Utility
 
 /** Return if the bag is empty */
 template <typename T>
@@ -187,7 +221,6 @@ void bag<T>::push_back(T const& val) {
     m_back = m_back->next;
 }
 
-
 /** Removes the first element from the bag */
 template <typename T>
 void bag<T>::pop_front() {
@@ -199,23 +232,6 @@ void bag<T>::pop_front() {
     }
 }
 
-/** Check if bag contains a child equal val_labels */
-template <typename T>
-bool bag<T>::contains_equal_label(T const& val){
-    if (!empty){
-        Node* ptr = this->m_front;
-        bool equal_label = false;
-        while (ptr && !equal_label){
-            // This works only on types that has get_label() as method
-            equal_label = ptr->val.get_label() == val.get_label();
-            ptr = ptr->next;
-        }
-        return equal_label;
-    }else{
-        return false;
-    }
-}
-
 /** 
  * Add in order of label a child
  * @param c child to add
@@ -224,67 +240,37 @@ bool bag<T>::contains_equal_label(T const& val){
 template <typename T>
 bool bag<T>::add_ordered(T const& val, T* father){
     if (!empty()){
-        // if (ptr->val.get_label() == val.get_label()){ // Same label(->can't add a child with same label)
-        //     return false;
-        // }else if(ptr->val.get_label() < val.get_label()){ // Replace the first element
-        //     Node* new_head = new Node{c, m_front};
-        //     m_front = new_head;
-        //     return true;
-        // }else{ // Check next elements
-        //     while (ptr->next && !equal_label && !added){
-        //         if (ptr->next->val.get_label() == val.get_label()){ // Same label(->can't add a child with same label)
-        //             equal_label = true;
-        //         }else if(ptr->next->val.get_label() > val.get_label()){ // If next is >, has to add before it this element
-        //             added = true;
-        //             Node* new_next = new Node{c, ptr->next};
-        //             ptr->next = new_next;
-        //         }else{
-        //             ptr = ptr->next;
-        //         }
-        //     }
-        //     // Return successful when there is no equal label and the element is added
-        //     if (!equal_label && !added){ // Has to added at the end
-
-        //     }
-            
-            
-        //     return !equal_label || added;
-        // }
-        Node* ptr = this->m_front;
-        bool equal_label = false;
-        bool added = false;
         // This works only on types that has get_label() as method
-        // First of all, check if it has to added at the front or at the end
+        // First of all, check if it has to be added at the front or at the end
         if (*(m_front->val.get_label()) == *(val.get_label()) || *(m_back->val.get_label()) == *(val.get_label())){ // Same label(->can't add a child with same label)
             return false;
         }else if (*(val.get_label()) < *(m_front->val.get_label())){ // Add in front
             push_front(val);
-            std::cout << "BEFORE: " << this->m_front->val.get_parent();
             this->m_front->val.set_parent(father);
-            std::cout << "| AFTER: " << this->m_front->val.get_parent();
-            return true;
-        }else if (*(val.get_label()) > *(m_back->val.get_label())){ // Add at the end
-            // TODO aggiungere solo in base a <
-            push_back(val);
-            // std::cout << "BEFORE: " << this->m_back->val.get_parent();
-            this->m_back->val.set_parent(father);
-            //std::cout << "| AFTER: " << this->m_back->val.get_parent();
             return true;
         }else{
+            Node* ptr = this->m_front;
+            bool equal_label = false;
+            bool added = false;
             while (ptr->next && !equal_label && !added){
                 if (*(ptr->next->val.get_label()) == *(val.get_label())){ // Same label(->can't add a child with same label)
                     equal_label = true;
-                }else if(*(ptr->next->val.get_label()) > *(val.get_label())){ // If next is >, has to add before it this element
+                }else if(*(val.get_label()) < *(ptr->next->val.get_label())){ // If next is >, has to add before it this element
                     added = true;
                     Node* new_next = new Node{val, ptr->next};
-                     std::cout << "BEFORE: " << new_next->val.get_parent();
                     new_next->val.set_parent(father);
-            std::cout << "| AFTER: " << new_next->val.get_parent();
                     ptr->next = new_next;
                 }else{
                     ptr = ptr->next;
                 }
             }
+
+            // If not added yet and no equal label, has to be added at the end
+            if(!added && !equal_label){
+                push_back(val);
+                this->m_back->val.set_parent(father);
+            }
+
             // Return successful when there is no equal label and the element is added
             return !equal_label || added;
         }
@@ -295,17 +281,13 @@ bool bag<T>::add_ordered(T const& val, T* father){
     }
 }
 
-/**
- * Update the parent of the children
-*/
+/** Update the parent of the elements in the actual bag */
 template <typename T>
 void bag<T>::update_parent(T* parent){
     for(auto it = begin(); it != end(); ++it){
         (*it).set_parent(parent);
     }
 }
-
-
 
 // Iterator
 
@@ -350,6 +332,7 @@ typename bag<T>::iterator bag<T>::end() {
 }
 
 // Const iterator
+
 /** Initialise an iterator from a defined element */
 template <typename T>
 bag<T>::const_iterator::const_iterator(const Node* ptr) : m_ptr(ptr) {}
@@ -388,36 +371,4 @@ typename bag<T>::const_iterator bag<T>::begin() const{
 template <typename T>
 typename bag<T>::const_iterator bag<T>::end() const{
     return {nullptr};
-}
-
-// Comparison
-template <typename T>
-bool bag<T>::operator==(const bag<T>& rhs) const {
-    bool equal = true;
-    auto it1 = this->begin();
-    auto it2 = rhs.begin();
-    // Two bags are equal when:
-    // - Are both empty
-    // - Children have same attributes
-    if(this->empty() && rhs.empty()){ // Both are empty
-        return true;
-    }else{
-        // Check until one bag reaches the end before the other(has more elements || some element is not equal)
-        do{
-            if((it1 == this->end() && it2 != rhs.end()) || (it1 != this->end() && it2 == rhs.end())){
-                equal = false;
-            }else{
-                // Check also the label bc operator== on trie doesn't control if equal
-                equal = *(it1->get_label()) == *(it2->get_label()) && *it1 == *it2;
-                ++it1;
-                ++it2;
-            }
-        }while(equal && it1 != this->end() && it2 != rhs.end());
-    }
-    return equal;
-}
-
-template <typename T>
-bool bag<T>::operator!=(const bag<T>& rhs) const {
-   return !(*this == rhs);
 }
