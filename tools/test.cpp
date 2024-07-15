@@ -1,5 +1,6 @@
 #include <iostream>
 //#include <string>
+#include <sstream>
 #include <fstream>
 #include "../src/trie.cpp"
 
@@ -130,22 +131,25 @@ int main(){
     // trie<std::string> t_3 = it.get_leaf();
 
     // Move constructor
-    // trie<std::string> t_3 = foo(t_p_1);
+    //  trie<std::string> t_3 = foo(t_p_1);
+    // std::cout << t_3;
+    //  std::cout << std::endl;
+    
+    // std::cout << boss;
+    // // Move assignment operator
+    //  //trie<std::string> t_3;
+    // // std::cout << "AOO2";
+    //  //t_3 = foo(t_p_1);
 
-    // Move assignment operator
-     trie<std::string> t_3;
-    // std::cout << "AOO2";
-     //t_3 = foo(t_p_1);
-
-    // print_trie(t_p_1);
-    // std::cout << std::endl;
-    // print_trie(t_p_2);
-       //print_trie(t_3);
-      // std::cout << boss.max();
-    // std::cout << std::endl;
-    //  std::vector<std::string> s = {"2due", "d"};
-    //   //print_trie(boss[s]);
-    // std::cout << boss[s];
+    // // print_trie(t_p_1);
+    //  std::cout << std::endl;
+    // // print_trie(t_p_2);
+    //    //print_trie(t_3);
+    //   // std::cout << boss.max();
+    // // std::cout << std::endl;
+    //   std::vector<std::string> s = {"2due", "d"};
+    // //   //print_trie(boss[s]);
+    //  std::cout << boss[s];
 //
 
     // trie<std::string> boss;
@@ -218,15 +222,85 @@ int main(){
     //     std::cerr << e.what() << '\n';
     // }
 
-    std::ifstream inputFile("datasets/trie_string.tr");
-    trie<std::string> t_o;
-    try{
-        inputFile >> t_o;
-        std::cout << t_o;
-    }catch(parser_exception e){
-        std::cerr << e.what() << '\n';
-    }
-    std::cout << "MAX LEAF: "<< std::endl;
-    std::cout << t_o.max();
+    // std::ifstream inputFile("datasets/trie_string.tr");
+    // trie<std::string> t_o;
+    // try{
+    //     inputFile >> t_o;
+    //     std::cout << t_o;
+    // }catch(parser_exception e){
+    //     std::cerr << e.what() << '\n';
+    // }
+    // std::cout << "MAX LEAF: "<< std::endl;
+    // std::cout << t_o.max();
+
+    // Facultative +
+
+    // // std::string t1 = "children = {a children = {b children = {a 1.5 children = {}, c 1.1 children = {}}}, c 0.5 children = {}}";
+    // std::string t1 = "children = {a children = {b children = {a 1.5 children = {}, c 1.1 children = {}}}, c 0.5 children = {}, d 1.3 children = {}}";
+    // // std::string t2 = "children = {a children = {a 1.5 children = {}, c children = {c 0.2 children = {}}}}";
+    // // std::string t2 = "children = {a children = {b children = {a 1 children = {}}, c children = {c 0.2 children = {}}}, c 0.2 children = {}}";
+    // std::string t2 = "children = {a children = {b 0.2 children = {}}, c 0.2 children = {}, d children = {e 1.0 children = {}}}";
+    // std::stringstream ss1;
+    // ss1 << t1;
+    // trie<char> t_s_1;
+    // //ss1 >> t_s_1;
+    // //std::cout << t_s_1;
+    // std::cout << std::endl;
+    // std::stringstream ss2;
+    // ss2 << t2;
+    // trie<char> t_s_2;
+    // //ss2 >> t_s_2;
+    // // std::cout << t_s_2;
+
+    // try{
+    //     ss1 >> t_s_1;
+    //     ss2 >> t_s_2;
+    // }catch(parser_exception e){
+    //     std::cerr << e.what() << '\n';
+    // }
+
+    //  std::cout << "Result: " << std::endl;
+    //  std::cout << t_s_1 + t_s_2;
+    // //  std::cout << "Max: " << std::endl;
+    // //  std::cout << (t_s_1 + t_s_2).max();
+    // std::cout << "\nOp1: " << std::endl;
+    // std::cout << t_s_1;
+    // std::cout << "\nOp2: " << std::endl;
+    // std::cout << t_s_2;
+
+    // Facultative +=
+    // // std::string t1 = "children = {a children = {b children = {a 1.5 children = {}, c 1.1 children = {}}}, c 0.5 children = {}}";
+    // std::string t1 = "children = {a children = {b children = {a 1.5 children = {}, c 1.1 children = {}}}, c 0.5 children = {}, d 1.3 children = {}}";
+    // // std::string t2 = "children = {a children = {a 1.5 children = {}, c children = {c 0.2 children = {}}}}";
+    // // std::string t2 = "children = {a children = {b children = {a 1 children = {}}, c children = {c 0.2 children = {}}}, c 0.2 children = {}}";
+    // std::string t2 = "children = {a children = {b 0.2 children = {}}, c 0.2 children = {}, d children = {e 1.0 children = {}}}";
+    // std::stringstream ss1;
+    // ss1 << t1;
+    // trie<char> t_s_1;
+    // //ss1 >> t_s_1;
+    // //std::cout << t_s_1;
+    // std::cout << std::endl;
+    // std::stringstream ss2;
+    // ss2 << t2;
+    // trie<char> t_s_2;
+    // //ss2 >> t_s_2;
+    // // std::cout << t_s_2;
+
+    // try{
+    //     ss1 >> t_s_1;
+    //     ss2 >> t_s_2;
+    // }catch(parser_exception e){
+    //     std::cerr << e.what() << '\n';
+    // }
+
+    // std::cout << "Op1 before: " << std::endl;
+    // std::cout << t_s_1;
+    // t_s_1 += t_s_2;
+    // std::cout << "\nOp1 after: " << std::endl;
+    // std::cout << t_s_1;
+    // std::cout << "\nOp2: " << std::endl;
+    // std::cout << t_s_2;
+    // std::cout << "Max op1 after: " << std::endl;
+    // std::cout << t_s_1.max();
 }
 

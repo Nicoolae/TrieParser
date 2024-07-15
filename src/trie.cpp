@@ -87,19 +87,13 @@ trie<T>& trie<T>::operator=(trie<T>&& rhs){
     return *this;
 }
 
-// Getters/Setters
+// Setters
 
 /** Set weight to a leaf */
 template <typename T>
 void trie<T>::set_weight(double w){
     // Set the weight only if leaf
     if(!this->m_c.empty()) this->m_w = w;
-}
-
-/** Returns the weight */
-template <typename T>
-double trie<T>::get_weight() const{
-    return this->m_w;
 }
 
 /** Set label */
@@ -110,6 +104,30 @@ void trie<T>::set_label(T* l){
     // Duplicate the ptr
     T* new_l = new T{(*l)};
     this->m_l = new_l;
+}
+
+/** Set the parent */
+template <typename T>
+void trie<T>::set_parent(trie<T>* p){
+    this->m_p = p;
+}
+
+/** Add a child in the bag */
+template <typename T>
+void trie<T>::add_child(trie<T> const& c){
+    // If the element can't be added, this happens only if there is a child with some label
+    // Pass also this in order to update m_p on the new child deep copied
+    if (!this->m_c.add_ordered(c, this)){
+        throw parser_exception{"There is already a child with same label"};
+    }
+}
+
+// Getters
+
+/** Returns the weight */
+template <typename T>
+double trie<T>::get_weight() const{
+    return this->m_w;
 }
 
 /** Get the label */
@@ -123,10 +141,15 @@ T const* trie<T>::get_label() const{
     }
 }
 
-/** Set the parent */
+/** Get the label */
 template <typename T>
-void trie<T>::set_parent(trie<T>* p){
-    this->m_p = p;
+T* trie<T>::get_label(){
+    // If not the root
+    if(this->m_p){
+        return this->m_l;
+    }else{
+        return nullptr;
+    }
 }
 
 /** Get the parent */
@@ -139,19 +162,25 @@ trie<T> const* trie<T>::get_parent() const{
     }
 }
 
-/** Add a child in the bag */
+/** Get the parent */
 template <typename T>
-void trie<T>::add_child(trie<T> const& c){
-    // If the element can't be added, this happens only if there is a child with some label
-    // Pass also this in order to update m_p on the new child deep copied
-    if (!this->m_c.add_ordered(c, this)){
-        throw parser_exception{"There is already a child with same label"};
+trie<T>* trie<T>::get_parent(){
+    if(this->m_p){
+        return this->m_p;
+    }else{
+        return nullptr;
     }
 }
 
 /** Returns the bag of children */
 template <typename T>
 bag<trie<T>> const& trie<T>::get_children() const {
+    return this->m_c;
+}
+
+/** Returns the bag of children */
+template <typename T>
+bag<trie<T>>& trie<T>::get_children() {
     return this->m_c;
 }
 
@@ -231,7 +260,7 @@ trie<T> const& trie<T>::operator[](std::vector<T> const& s) const{
      * Pointer to the reached trie.
      * PS: can't do a reference because references can't change the referenced obj
      */
-    trie<T>* reached_trie = this;
+    const trie<T>* reached_trie = this;
     /** Index of the next label to search */
     long unsigned int next_label = 0;
     bool contains_label = true;
@@ -283,8 +312,8 @@ trie<T>& trie<T>::max(){
 */
 template <typename T>
 trie<T> const& trie<T>::max() const{
-    leaf_iterator it{this};
-    trie<T>* max = &(this->begin().get_leaf());
+    const_leaf_iterator it{this};
+    const trie<T>* max = &(this->begin().get_leaf());
     ++it;
     while (it != this->end()){
         if(it.get_leaf().m_w > max->m_w){
@@ -310,7 +339,13 @@ trie<T>::node_iterator::node_iterator(trie<T>* t) : m_ptr(t) {}
 */
 template <typename T>
 typename trie<T>::node_iterator::reference trie<T>::node_iterator::operator*() const{
-    return (m_ptr->m_l) ? *(m_ptr->m_l) : throw parser_exception{"No label for the root"};
+    if(!this->m_ptr){
+        throw parser_exception{"No node pointed"};
+    }else if(!this->m_ptr->m_l){
+        throw parser_exception{"No label for the root"};
+    }else{
+        return *(this->m_ptr->m_l);
+    }
 }
 
 /**
@@ -319,7 +354,7 @@ typename trie<T>::node_iterator::reference trie<T>::node_iterator::operator*() c
 */
 template <typename T>
 typename trie<T>::node_iterator::pointer trie<T>::node_iterator::operator->() const{
-    return &(*m_ptr);
+    return m_ptr->m_l;
 }
 
 /**
@@ -387,7 +422,13 @@ trie<T>::const_node_iterator::const_node_iterator(const trie<T>* t) : m_ptr(t) {
 */
 template <typename T>
 typename trie<T>::const_node_iterator::reference trie<T>::const_node_iterator::operator*() const{
-    return (m_ptr->m_l) ? *(m_ptr->m_l) : throw parser_exception{"No label for the root"};
+    if(!this->m_ptr){
+        throw parser_exception{"No node pointed"};
+    }else if(!this->m_ptr->m_l){
+        throw parser_exception{"No label for the root"};
+    }else{
+        return *(this->m_ptr->m_l);
+    }
 }
 
 /**
@@ -763,7 +804,7 @@ typename trie<T>::const_leaf_iterator trie<T>::end() const{
     // The end leaf is the first one of the next node so go at the father and reach the next node of this
     if(this->m_p){
         trie<T>* father_node = this->m_p;
-        trie<T>* actual_leaf = this;
+        const trie<T>* actual_leaf = this;
         // Search the next leaf in the children until find a valid one or reach the root
         while(!next_node && father_node){
             auto it = father_node->m_c.begin();
@@ -907,7 +948,6 @@ void node(std::istream& is, trie<T>& t){
     // Any node has the label, try to parse it
     T label;
     is >> label;
-    //std::cout << label;
     skip_blank_spaces(is);
     if(is.fail()){ // The label in the is isn't parsed as T, goes in fail
         throw parser_exception{"The label can't be parsed as type T"};
@@ -998,4 +1038,79 @@ std::istream& operator>>(std::istream& is, trie<T>& t){
     return is;
 }
 
+// Facultative: union
+
+/**
+ * Sums this and another 1 different trie in a new one
+ * @param op2 second trie operand(first is this)
+ * @return New trie result
+*/
+template <typename T>
+trie<T> trie<T>::operator+(trie<T> const& op2) const {
+    if(this->m_c.empty() && op2.m_c.empty()){ // Both are leaves
+        trie<T> result = *this;
+        result.m_w += op2.m_w;
+        return result;
+    }else if(!this->m_c.empty() && op2.m_c.empty()){ // The second operand is a leaf
+        trie<T> result = *this;
+        for(auto it = result.m_c.begin(); it != result.m_c.end(); ++it){
+            (*it) = (*it) + op2;
+        }
+        return result;
+    }else if(this->m_c.empty() && !op2.m_c.empty()){ // The first operand is a leaf
+        trie<T> result = op2;
+        for(auto it = result.m_c.begin(); it != result.m_c.end(); ++it){
+            (*it) = (*it) + *this;
+        }
+        return result;
+    }else{
+        trie<T> result = *this;
+        // Check the children of the second trie
+        for(auto it = op2.m_c.begin(); it != op2.m_c.end(); ++it){
+            // Try to add second operand child to the result
+            bool added = result.m_c.add_ordered(*it, &result);
+            if(!added){ // Adding fail
+                std::vector<T> s{*(it->m_l)};
+                result[s] = result[s] + (*it);
+            }
+        }
+        return result;
+    }
+}
+
+/**
+ * Sums in this another 1 different
+ * @param op2 second trie operand(first is this)
+ * @return This trie modified
+*/
+template <typename T>
+trie<T>& trie<T>::operator+=(trie<T> const& op2) {
+    if(this->m_c.empty() && op2.m_c.empty()){ // Both are leaves
+        this->m_w += op2.m_w;
+        return *this;
+    }else if(!this->m_c.empty() && op2.m_c.empty()){ // The second operand is a leaf
+        for(auto it = this->m_c.begin(); it != this->m_c.end(); ++it){
+            (*it) = (*it) + op2;
+        }
+        return *this;
+    }else if(this->m_c.empty() && !op2.m_c.empty()){ // The first operand is a leaf
+        trie<T> tmp{*this};
+        *this = op2; 
+        for(auto it = this->m_c.begin(); it != this->m_c.end(); ++it){
+            (*it) = (*it) + tmp;
+        }
+        return *this;;
+    }else{
+        // Check the children of the second trie
+        for(auto it = op2.m_c.begin(); it != op2.m_c.end(); ++it){
+            // Try to add second operand child to the result
+            bool added = this->m_c.add_ordered(*it, this);
+            if(!added){ // Adding fail
+                std::vector<T> s{*(it->m_l)};
+                (*this)[s] = (*this)[s] + (*it);
+            }
+        }
+        return *this;
+    }
+}
 

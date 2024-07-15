@@ -267,6 +267,7 @@ bool bag<T>::add_ordered(T const& val, T* father){
 
             // If not added yet and no equal label, has to be added at the end
             if(!added && !equal_label){
+                added = true;
                 push_back(val);
                 this->m_back->val.set_parent(father);
             }
