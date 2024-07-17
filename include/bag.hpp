@@ -13,7 +13,6 @@ struct bag{
             Node* next;
         };
         
-        // Methods
         void pop_front();
         void push_front(T const&);
         void push_back(T const&);
@@ -24,11 +23,11 @@ struct bag{
         bag(bag<T>&&);
         ~bag();
         bool empty() const;
+        bool has_one_child() const;
         bag<T>& operator=(bag<T> const&);
         bag<T>& operator=(bag<T>&&);
         bool add_ordered(T const&, T*);
-        void print_children() const;
-        T* get_next(T*);
+        void reorder();
         bool operator==(const bag<T>& rhs) const;
         bool operator!=(const bag<T>& rhs) const;
         void update_parent(T*);
@@ -199,6 +198,13 @@ bool bag<T>::empty() const {
     return m_front == nullptr;
 }
 
+/** Return if the bag contains jus an element */
+template <typename T>
+bool bag<T>::has_one_child() const {
+    if(this->m_front && this->m_front == this->m_back) return true;
+    return false;
+}
+
 /** Add an element in front */
 template <typename T>
 void bag<T>::push_front(T const& val) {
@@ -288,6 +294,23 @@ void bag<T>::update_parent(T* parent){
     for(auto it = begin(); it != end(); ++it){
         (*it).set_parent(parent);
     }
+}
+
+/** Reorder the elements using INSERTION SORT */
+template <typename T>
+void bag<T>::reorder(){
+    bag<T> ordered;
+    for(auto it = begin(); it != end(); ++it){
+        ordered.add_ordered(*it, it->get_parent());
+    }
+    // Destroy old list
+    while(!this->empty()) pop_front();
+    // Steal his internal status
+    this->m_front = ordered.m_front;
+    this->m_back = ordered.m_back;
+    ordered.m_front = nullptr;
+    ordered.m_back = nullptr;
+
 }
 
 // Iterator

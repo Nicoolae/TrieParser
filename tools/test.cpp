@@ -2,6 +2,7 @@
 //#include <string>
 #include <sstream>
 #include <fstream>
+#include <algorithm>
 #include "../src/trie.cpp"
 
 template <typename T>
@@ -269,38 +270,67 @@ int main(){
     // std::cout << t_s_2;
 
     // Facultative +=
-    // // std::string t1 = "children = {a children = {b children = {a 1.5 children = {}, c 1.1 children = {}}}, c 0.5 children = {}}";
-    // std::string t1 = "children = {a children = {b children = {a 1.5 children = {}, c 1.1 children = {}}}, c 0.5 children = {}, d 1.3 children = {}}";
-    // // std::string t2 = "children = {a children = {a 1.5 children = {}, c children = {c 0.2 children = {}}}}";
-    // // std::string t2 = "children = {a children = {b children = {a 1 children = {}}, c children = {c 0.2 children = {}}}, c 0.2 children = {}}";
-    // std::string t2 = "children = {a children = {b 0.2 children = {}}, c 0.2 children = {}, d children = {e 1.0 children = {}}}";
-    // std::stringstream ss1;
-    // ss1 << t1;
-    // trie<char> t_s_1;
-    // //ss1 >> t_s_1;
-    // //std::cout << t_s_1;
-    // std::cout << std::endl;
-    // std::stringstream ss2;
-    // ss2 << t2;
-    // trie<char> t_s_2;
-    // //ss2 >> t_s_2;
-    // // std::cout << t_s_2;
+//     // // std::string t1 = "children = {a children = {b children = {a 1.5 children = {}, c 1.1 children = {}}}, c 0.5 children = {}}";
+//      std::string t1 = "children = {a children = {b children = {a 1.5 children = {}, c 1.1 children = {}}}, c 0.5 children = {}, d 1.3 children = {}}";
+//     // // std::string t2 = "children = {a children = {a 1.5 children = {}, c children = {c 0.2 children = {}}}}";
+//     // // std::string t2 = "children = {a children = {b children = {a 1 children = {}}, c children = {c 0.2 children = {}}}, c 0.2 children = {}}";
+//      std::string t2 = "children = {a children = {b 0.2 children = {}}, c 0.2 children = {}, d children = {e 1.0 children = {}}}";
+//      std::stringstream ss1;
+//      ss1 << t1;
+//      trie<char> t;
+//     // //ss1 >> t_s_1;
+//     // //std::cout << t_s_1;
+//     // std::cout << std::endl;
+//      std::stringstream ss2;
+//      ss2 << t2;
+//      trie<char> t_s_2;
+//     // //ss2 >> t_s_2;
+//     // // std::cout << t_s_2;
 
-    // try{
-    //     ss1 >> t_s_1;
-    //     ss2 >> t_s_2;
-    // }catch(parser_exception e){
-    //     std::cerr << e.what() << '\n';
-    // }
+//     try{
+//         ss1 >> t;
+//         ss2 >> t_s_2;
+//     }catch(parser_exception e){
+//         std::cerr << e.what() << '\n';
+//     }
 
-    // std::cout << "Op1 before: " << std::endl;
-    // std::cout << t_s_1;
-    // t_s_1 += t_s_2;
-    // std::cout << "\nOp1 after: " << std::endl;
-    // std::cout << t_s_1;
-    // std::cout << "\nOp2: " << std::endl;
-    // std::cout << t_s_2;
-    // std::cout << "Max op1 after: " << std::endl;
-    // std::cout << t_s_1.max();
+//     // std::cout << "Op1 before: " << std::endl;
+//     // std::cout << t_s_1;
+//     // t_s_1 += t_s_2;
+//     // std::cout << "\nOp1 after: " << std::endl;
+//      std::cout << t;
+//     // std::cout << "\nOp2: " << std::endl;
+//     // std::cout << t_s_2;
+//     // std::cout << "Max op1 after: " << std::endl;
+//     // std::cout << t_s_1.max();
+
+//     for (auto leaf_it = t.begin(); leaf_it != t.end(); ++leaf_it) {
+// 	trie<char>::node_iterator node_it = leaf_it; // we convert leaf_it into node_it to navigate from leaf to root
+// 	std::vector<char> s;
+// 	while (node_it != t.root()) {
+// 		s.push_back(*node_it);
+// 		++node_it;
+// 	}
+// 	std::reverse(s.begin(), s.end());
+// 	for (auto const& x: s) std::cout << x << ' ';
+// 	std::cout << '\n';
+// }
+
+    // Facultative path_compress()
+
+    // std::string t1 = "children = {4 3.1 children = {}, 5 children = {2 2.9 children = {}, 3 children = {21 children = {7 7 children = {}, 12 5.3 children = {}}}}}";
+    std::string t1 = "children = {5 children = {2 children = {7 children = {1 children = {2 children = {7 children = {7 children = {8 children = {9 children = {12 5 children = {}, 13 6 children = {}}}}, 12 5.3 children = {}}}}}}}, 7 3 children = {}}";
+    std::stringstream ss1;
+    ss1 << t1;
+    trie<int> t;
+    ss1 >> t;
+
+    std::cout << "Before compression: \n";
+    std::cout << t;
+    std::cout << "\nAfter compression: \n";
+    t.path_compress();
+    std::cout << t;
+    std::cout << "\nMAX: \n";
+    std::cout << t.max();
 }
 

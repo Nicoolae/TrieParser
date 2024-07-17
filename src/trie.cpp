@@ -1114,3 +1114,25 @@ trie<T>& trie<T>::operator+=(trie<T> const& op2) {
     }
 }
 
+// Facultative: path compression
+
+/** Compress the children with just one children in one trie */
+template <typename T>
+void trie<T>::path_compress(){
+    if(this->m_c.empty()){ // Leaf
+       return;
+    }else if(this->m_p && this->m_c.has_one_child()){
+        (*(this->m_c.begin())).path_compress();
+        int* tmp_l = new int{*(this->m_l) + *(this->m_c.begin()->m_l)};
+        this->set_label(tmp_l);
+        delete tmp_l;
+        trie<T> next_children{*(this->m_c.begin())};
+        *this = next_children;
+    }else{
+        for(auto it = this->m_c.begin(); it != this->m_c.end(); ++it){
+            (*it).path_compress();
+        }
+        this->m_c.reorder();
+    }
+}
+
