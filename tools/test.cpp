@@ -58,73 +58,73 @@ int main(){
 
     
     // TEST COPY/MOVE SEMANTICS
-    trie<std::string> t_p_1;
-    trie<std::string> t_p_2;
-    trie<std::string> t_c_1_1{1.0};
-    trie<std::string> t_c_1_2{2.0};
-    trie<std::string> t_c_2_1{3.0};
-    trie<std::string> t_c_2_2;
-    trie<std::string> t_c_2_2_1{4.0};
-    trie<std::string> t_c_2_2_2{5.0};
+    // trie<std::string> t_p_1;
+    // trie<std::string> t_p_2;
+    // trie<std::string> t_c_1_1{1.0};
+    // trie<std::string> t_c_1_2{2.0};
+    // trie<std::string> t_c_2_1{3.0};
+    // trie<std::string> t_c_2_2;
+    // trie<std::string> t_c_2_2_1{4.0};
+    // trie<std::string> t_c_2_2_2{5.0};
 
-    trie<std::string> boss;
-    t_p_1.set_parent(&boss);
-    t_p_2.set_parent(&boss);
-    std::string* a = new std::string{"1uno"};
-    t_p_1.set_label(a);
-    delete a;
-     a = new std::string{"2due"};
-    t_p_2.set_label(a);
-    delete a;
+    // trie<std::string> boss;
+    // t_p_1.set_parent(&boss);
+    // t_p_2.set_parent(&boss);
+    // std::string* a = new std::string{"1uno"};
+    // t_p_1.set_label(a);
+    // delete a;
+    //  a = new std::string{"2due"};
+    // t_p_2.set_label(a);
+    // delete a;
 
-    t_c_1_1.set_parent(&t_p_1);
-     a = new std::string{"a"};
-    t_c_1_1.set_label(a);
-    delete a;
+    // t_c_1_1.set_parent(&t_p_1);
+    //  a = new std::string{"a"};
+    // t_c_1_1.set_label(a);
+    // delete a;
 
-    t_c_1_2.set_parent(&t_p_1);
-    a = new std::string{"b"};
-    t_c_1_2.set_label(a);
-    delete a;
+    // t_c_1_2.set_parent(&t_p_1);
+    // a = new std::string{"b"};
+    // t_c_1_2.set_label(a);
+    // delete a;
 
-    t_c_2_1.set_parent(&t_p_2);
-    a = new std::string{"c"};
-    t_c_2_1.set_label(a);
-    delete a;
+    // t_c_2_1.set_parent(&t_p_2);
+    // a = new std::string{"c"};
+    // t_c_2_1.set_label(a);
+    // delete a;
 
-    t_c_2_2.set_parent(&t_p_2);
-    a = new std::string{"d"};
-    t_c_2_2.set_label(a);
-    delete a;
+    // t_c_2_2.set_parent(&t_p_2);
+    // a = new std::string{"d"};
+    // t_c_2_2.set_label(a);
+    // delete a;
 
-    t_c_2_2_1.set_parent(&t_c_2_2);
-    a = new std::string{"e"};
-    t_c_2_2_1.set_label(a);
-    delete a;
+    // t_c_2_2_1.set_parent(&t_c_2_2);
+    // a = new std::string{"e"};
+    // t_c_2_2_1.set_label(a);
+    // delete a;
 
-    t_c_2_2_2.set_parent(&t_c_2_2);
-    a = new std::string{"f"};
-    t_c_2_2_2.set_label(a);
-    delete a;
+    // t_c_2_2_2.set_parent(&t_c_2_2);
+    // a = new std::string{"f"};
+    // t_c_2_2_2.set_label(a);
+    // delete a;
 
-    try{
-        t_c_2_2.add_child(t_c_2_2_1);
-        t_c_2_2.add_child(t_c_2_2_2);
-        t_p_2.add_child(t_c_2_1);
-        t_p_2.add_child(t_c_2_2);
+    // try{
+    //     t_c_2_2.add_child(t_c_2_2_1);
+    //     t_c_2_2.add_child(t_c_2_2_2);
+    //     t_p_2.add_child(t_c_2_1);
+    //     t_p_2.add_child(t_c_2_2);
         
-        // Prova operator =
-        //t_c_1_1 = t_p_2;
+    //     // Prova operator =
+    //     //t_c_1_1 = t_p_2;
 
-        t_p_1.add_child(t_c_1_1);
-        t_p_1.add_child(t_c_1_2);  
+    //     t_p_1.add_child(t_c_1_1);
+    //     t_p_1.add_child(t_c_1_2);  
 
-        boss.add_child(t_p_1);
-        boss.add_child(t_p_2);
-    }catch(parser_exception e){
-        std::cerr << e.what() << '\n';
-        return 1;
-    }
+    //     boss.add_child(t_p_1);
+    //     boss.add_child(t_p_2);
+    // }catch(parser_exception e){
+    //     std::cerr << e.what() << '\n';
+    //     return 1;
+    // }
 
     // Copy constructor
     // auto it = trie<std::string>::leaf_iterator{&t_c_1_1};
@@ -270,39 +270,39 @@ int main(){
     // std::cout << t_s_2;
 
     // Facultative +=
-//     // // std::string t1 = "children = {a children = {b children = {a 1.5 children = {}, c 1.1 children = {}}}, c 0.5 children = {}}";
-//      std::string t1 = "children = {a children = {b children = {a 1.5 children = {}, c 1.1 children = {}}}, c 0.5 children = {}, d 1.3 children = {}}";
-//     // // std::string t2 = "children = {a children = {a 1.5 children = {}, c children = {c 0.2 children = {}}}}";
-//     // // std::string t2 = "children = {a children = {b children = {a 1 children = {}}, c children = {c 0.2 children = {}}}, c 0.2 children = {}}";
-//      std::string t2 = "children = {a children = {b 0.2 children = {}}, c 0.2 children = {}, d children = {e 1.0 children = {}}}";
-//      std::stringstream ss1;
-//      ss1 << t1;
-//      trie<char> t;
-//     // //ss1 >> t_s_1;
-//     // //std::cout << t_s_1;
-//     // std::cout << std::endl;
-//      std::stringstream ss2;
-//      ss2 << t2;
-//      trie<char> t_s_2;
-//     // //ss2 >> t_s_2;
-//     // // std::cout << t_s_2;
+    // // // std::string t1 = "children = {a children = {b children = {a 1.5 children = {}, c 1.1 children = {}}}, c 0.5 children = {}}";
+    //  std::string t1 = "children = {a children = {b children = {a 1.5 children = {}, c 1.1 children = {}}}, c 0.5 children = {}, d 1.3 children = {}}";
+    // // // std::string t2 = "children = {a children = {a 1.5 children = {}, c children = {c 0.2 children = {}}}}";
+    // // // std::string t2 = "children = {a children = {b children = {a 1 children = {}}, c children = {c 0.2 children = {}}}, c 0.2 children = {}}";
+    //  std::string t2 = "children = {a children = {b 0.2 children = {}}, c 0.2 children = {}, d children = {e 1.0 children = {}}}";
+    //  std::stringstream ss1;
+    //  ss1 << t1;
+    //  trie<char> t;
+    // // //ss1 >> t_s_1;
+    // // //std::cout << t_s_1;
+    // // std::cout << std::endl;
+    //  std::stringstream ss2;
+    //  ss2 << t2;
+    //  trie<char> t_s_2;
+    // // //ss2 >> t_s_2;
+    // // // std::cout << t_s_2;
 
-//     try{
-//         ss1 >> t;
-//         ss2 >> t_s_2;
-//     }catch(parser_exception e){
-//         std::cerr << e.what() << '\n';
-//     }
+    // try{
+    //     ss1 >> t;
+    //     ss2 >> t_s_2;
+    // }catch(parser_exception e){
+    //     std::cerr << e.what() << '\n';
+    // }
 
-//     // std::cout << "Op1 before: " << std::endl;
-//     // std::cout << t_s_1;
-//     // t_s_1 += t_s_2;
-//     // std::cout << "\nOp1 after: " << std::endl;
-//      std::cout << t;
-//     // std::cout << "\nOp2: " << std::endl;
-//     // std::cout << t_s_2;
-//     // std::cout << "Max op1 after: " << std::endl;
-//     // std::cout << t_s_1.max();
+    // // std::cout << "Op1 before: " << std::endl;
+    // // std::cout << t_s_1;
+    // t += t_s_2;
+    // // std::cout << "\nOp1 after: " << std::endl;
+    //  std::cout << t;
+    // // std::cout << "\nOp2: " << std::endl;
+    // // std::cout << t_s_2;
+    // // std::cout << "Max op1 after: " << std::endl;
+    // // std::cout << t_s_1.max();
 
 //     for (auto leaf_it = t.begin(); leaf_it != t.end(); ++leaf_it) {
 // 	trie<char>::node_iterator node_it = leaf_it; // we convert leaf_it into node_it to navigate from leaf to root
@@ -318,19 +318,160 @@ int main(){
 
     // Facultative path_compress()
 
-    // std::string t1 = "children = {4 3.1 children = {}, 5 children = {2 2.9 children = {}, 3 children = {21 children = {7 7 children = {}, 12 5.3 children = {}}}}}";
-    std::string t1 = "children = {5 children = {2 children = {7 children = {1 children = {2 children = {7 children = {7 children = {8 children = {9 children = {12 5 children = {}, 13 6 children = {}}}}, 12 5.3 children = {}}}}}}}, 7 3 children = {}}";
-    std::stringstream ss1;
-    ss1 << t1;
-    trie<int> t;
-    ss1 >> t;
+    // // std::string t1 = "children = {4 3.1 children = {}, 5 children = {2 2.9 children = {}, 3 children = {21 children = {7 7 children = {}, 12 5.3 children = {}}}}}";
+    // std::string t1 = "children = {5 children = {2 children = {7 children = {1 children = {2 children = {7 children = {7 children = {8 children = {9 children = {12 5 children = {}, 13 6 children = {}}}}, 12 5.3 children = {}}}}}}}, 7 3 children = {}}";
+    // std::stringstream ss1;
+    // ss1 << t1;
+    // trie<int> t;
+    // ss1 >> t;
 
-    std::cout << "Before compression: \n";
-    std::cout << t;
-    std::cout << "\nAfter compression: \n";
-    t.path_compress();
-    std::cout << t;
-    std::cout << "\nMAX: \n";
-    std::cout << t.max();
+    // std::cout << "Before compression: \n";
+    // std::cout << t;
+    // std::cout << "\nAfter compression: \n";
+    // t.path_compress();
+    // std::cout << t;
+    // std::cout << "\nMAX: \n";
+    // std::cout << t.max();
+
+    // ---------------------------------------------
+    // Final tests
+    
+    // Operator >> && Operator << --> OK
+    trie<char> t;
+    std::ifstream inputFile("datasets/final_test_ok.tr");
+    std::ifstream inputFile1("datasets/trie_char1.tr");
+    try{
+        inputFile >> t;
+        // std::cout << "Firstly: \n" << t;
+        // inputFile1 >> t;
+         std::cout << "\nAfter: \n" << t;
+    }catch(parser_exception e){
+        std::cerr << e.what() << '\n';
+    }
+
+
+    // Getters and setters
+    // trie<int> t1;
+    // std::cout << "Weight before: " << t1.get_weight();
+    // t1.set_weight(3860.18);
+    // std::cout << " | Weight after: " << t1.get_weight();
+
+
+    // CONSTRUCTORS E MOVE --> OK
+    // trie<int> t1;
+    // trie<int> t2{21.21};
+    // trie<char> t3{t};
+    // std::vector<char> a{'a', 'b', 'a'};
+    // std::vector<char> b{'c'};
+    // trie<char> t4;
+    // t4 = foo(t);
+    // // t4[b] = t[a];
+    // t4[b] = foo(t[a]);
+
+    // std::cout << std::endl << t1 << std::endl;
+    // std::cout << t2 << std::endl;
+    // std::cout << t3 << std::endl;
+    // std::cout << t4 << std::endl;
+
+    // OPERATOR == && != --> OK
+    // std::vector<char> a{'a', 'b'};
+    // trie<char> t3{t[a]};
+    // std::cout << t3 << std::endl;
+    // std::cout << (t3 == t[a]) << std::endl;
+    // std::cout << (t3 == t) << std::endl;
+    // std::cout << (t3 != t[a]) << std::endl;
+    // std::cout << (t3 != t) << std::endl;
+
+    // OPERATOR [] --> OK
+    // const trie<char> t3{t};
+    // std::vector<char> a{'a', 'b'};
+    // std::cout << t3[a];
+
+    // trie<char> t4{t};
+    // std::cout << t4[a];
+
+    // MAX --> OK
+    // const trie<char> t3{t};
+    // std::cout << t.max();
+    // std::cout << t3.max();
+
+    // ITERATORS --> OK
+    // const trie<char> t3{t};
+    // std::cout << "Sequenze T: \n";
+    // for (auto leaf_it = t.begin(); leaf_it != t.end(); leaf_it++) {
+    //     trie<char>::node_iterator node_it = leaf_it; // we convert leaf_it into node_it to navigate from leaf to root
+    //     std::vector<char> s;
+    //     while (node_it != t.root()) {
+    //         s.push_back(*node_it);
+    //         node_it++;
+    //     }
+    //     std::reverse(s.begin(), s.end());
+    //     for (auto const& x: s) std::cout << x << ' ';
+    //     std::cout << '\n';
+    // }
+
+    // std::cout << "Sequenze T3: \n";
+    // for (auto leaf_it = t3.begin(); leaf_it != t3.end(); leaf_it++) {
+    //     trie<char>::const_node_iterator node_it = leaf_it; // we convert leaf_it into node_it to navigate from leaf to root
+    //     std::vector<char> s;
+    //     while (node_it != t3.root()) {
+    //         s.push_back(*node_it);
+    //         node_it++;
+    //     }
+    //     std::reverse(s.begin(), s.end());
+    //     for (auto const& x: s) std::cout << x << ' ';
+    //     std::cout << '\n';
+    // }
+
+    // Operator+ && += --> OK
+    // std::string t1 = "children = {a children = {b children = {a 1.5 children = {}, c 1.1 children = {}}}, c 0.5 children = {}}";
+    // // std::string t1 = "children = {a children = {b children = {a 1.5 children = {}, c 1.1 children = {}}}, c 0.5 children = {}, d -1.3 children = {}}";
+    // // std::string t2 = "children = {a children = {a -1.5 children = {}, c children = {c 0.2 children = {}}}}";
+    // std::string t2 = "children = {a children = {b children = {a -1 children = {}}, c children = {c 0.2 children = {}}}, c 0.2 children = {}}";
+    // //  std::string t2 = "children = {a children = {b 0.2 children = {}}, c 0.2 children = {}, d children = {e 1.0 children = {}}}";
+    // std::stringstream ss1;
+    // ss1 << t1;
+    // trie<char> t_s_1;
+    // //ss1 >> t_s_1;
+    // //std::cout << t_s_1;
+    // std::cout << std::endl;
+    // std::stringstream ss2;
+    // ss2 << t2;
+    // trie<char> t_s_2;
+    // //ss2 >> t_s_2;
+    // // std::cout << t_s_2;
+
+    // try{
+    //     ss1 >> t_s_1;
+    //     ss2 >> t_s_2;
+    // }catch(parser_exception e){
+    //     std::cerr << e.what() << '\n';
+    // }
+
+    // std::cout << "\nOp1: " << std::endl;
+    // std::cout << t_s_1;
+    // std::cout << "\nOp2: " << std::endl;
+    // std::cout << t_s_2;
+    //  std::cout << "Result: " << std::endl;
+    //  std::cout << t_s_1 + t_s_2;
+    // //  std::cout << "Max: " << std::endl;
+    // //  std::cout << (t_s_1 + t_s_2).max();
+
+    // PATH COMPRESS --> OK
+    // // std::string t1 = "children = {4 3.1 children = {}, 5 children = {2 2.9 children = {}, 3 children = {21 children = {7 7 children = {}, 12 5.3 children = {}}}}}";
+    // // std::string t1 = "children = {5 children = {2 children = {7 children = {1 children = {2 children = {7 children = {7 children = {8 children = {9 children = {12 5 children = {}, 13 6 children = {}}}}, 12 5.3 children = {}}}}}}}, 7 3 children = {}}";
+    // std::string t1 = "children = {a 3.1 children = {}, ac children = {bc 2.9 children = {}, c children = {dg children = {x 7.0 children = {}, yz 5.3 children = {}}}}}";
+    // std::stringstream ss1;
+    // ss1 << t1;
+    // trie<std::string> t2;
+    // ss1 >> t2;
+
+    // std::cout << "Before compression: \n";
+    // std::cout << t2;
+    // std::cout << "\nAfter compression: \n";
+    // t2.path_compress();
+    // std::cout << t2;
+    // std::cout << "\nMAX: \n";
+    // std::cout << t2.max();
 }
 

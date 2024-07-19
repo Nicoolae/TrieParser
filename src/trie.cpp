@@ -28,7 +28,7 @@ trie<T>::trie(double weight)
 template <typename T>
 trie<T>::trie(trie<T> const& rhs)
     : m_c(rhs.m_c){
-    this->m_p = rhs.m_p;
+    this->m_p = nullptr;
     if(rhs.m_l){
         this->m_l = new T{*(rhs.m_l)};
     }else{
@@ -45,7 +45,7 @@ trie<T>::trie(trie<T> const& rhs)
 template <typename T>
 trie<T>::trie(trie<T>&& rhs)
     :m_c(std::move(rhs.m_c)){
-    this->m_p = rhs.m_p;
+    this->m_p = nullptr;
     this->m_l = rhs.m_l;
     rhs.m_l = nullptr;
     this->m_w = rhs.m_w;
@@ -93,7 +93,7 @@ trie<T>& trie<T>::operator=(trie<T>&& rhs){
 template <typename T>
 void trie<T>::set_weight(double w){
     // Set the weight only if leaf
-    if(!this->m_c.empty()) this->m_w = w;
+    this->m_w = w;
 }
 
 /** Set label */
@@ -133,43 +133,25 @@ double trie<T>::get_weight() const{
 /** Get the label */
 template <typename T>
 T const* trie<T>::get_label() const{
-    // If not the root
-    if(this->m_p){
-        return this->m_l;
-    }else{
-        return nullptr;
-    }
+    return this->m_l;
 }
 
 /** Get the label */
 template <typename T>
 T* trie<T>::get_label(){
-    // If not the root
-    if(this->m_p){
-        return this->m_l;
-    }else{
-        return nullptr;
-    }
+    return this->m_l;
 }
 
 /** Get the parent */
 template <typename T>
 trie<T> const* trie<T>::get_parent() const{
-    if(this->m_p){
-        return this->m_p;
-    }else{
-        return nullptr;
-    }
+    return this->m_p;
 }
 
 /** Get the parent */
 template <typename T>
 trie<T>* trie<T>::get_parent(){
-    if(this->m_p){
-        return this->m_p;
-    }else{
-        return nullptr;
-    }
+    return this->m_p;
 }
 
 /** Returns the bag of children */
@@ -375,7 +357,7 @@ template <typename T>
 typename trie<T>::node_iterator trie<T>::node_iterator::operator++(int){
     // Not incremented object to return
     node_iterator pre_increment(this->m_ptr);
-    this->m_ptr++;
+    ++(*this);
     return pre_increment;
 }
 
@@ -404,7 +386,7 @@ bool trie<T>::node_iterator::operator!=(node_iterator const& rhs) const{
 template <typename T>
 typename trie<T>::node_iterator trie<T>::root(){
     // Root of any trie is the trie its self
-    return  node_iterator{this};
+    return node_iterator{this};
 }
 
 // Const iterator
@@ -460,7 +442,7 @@ template <typename T>
 typename trie<T>::const_node_iterator trie<T>::const_node_iterator::operator++(int){
     // Not incremented object to return
     const_node_iterator pre_increment(this->m_ptr);
-    this->m_ptr++;
+    ++(*this);
     return pre_increment;
 }
 
@@ -833,6 +815,7 @@ template <typename T>
 std::ostream& operator<<(std::ostream& os, trie<T> const& t){
     // Call to a support function, bc need a param for the father just to write indented
     print_indented(os, t, t);
+    os << "\n";
     return os;
 }
 
@@ -951,8 +934,7 @@ void node(std::istream& is, trie<T>& t){
     skip_blank_spaces(is);
     if(is.fail()){ // The label in the is isn't parsed as T, goes in fail
         throw parser_exception{"The label can't be parsed as type T"};
-    }else if(is.peek() >= 48 && is.peek() <= 57){ // Leaf
-        // TODO occhio al fatto che magari trie può avere già qualcosa dentro
+    }else if(is.peek() == '-' || (is.peek() >= 48 && is.peek() <= 57)){ // Leaf
         trie<T> leaf_to_add;
         leaf(is, leaf_to_add);
         leaf_to_add.set_label(&label);
@@ -1009,15 +991,16 @@ void node(std::istream& is, trie<T>& t){
  */
 template <typename T>
 std::istream& operator>>(std::istream& is, trie<T>& t){
+    trie<T> new_trie;
     skip_blank_spaces(is);
     char c = is.peek();
-    if((int) c >= 48 && (int) c <= 57){ // Root has to be parsed as a LEAF(first case in CFG ROOT)
-        leaf(is, t);
+    if(c == '-' || ((int) c >= 48 && (int) c <= 57)){ // Root has to be parsed as a LEAF(first case in CFG ROOT)
+        leaf(is, new_trie);
     }else{ // Node
         // Try to read children = {NODE}
         std::string s = "";
         is >> s;
-        if (s != "children") throw parser_exception{"Expected keyword 'children'"};
+        if (s != "children") throw parser_exception{"Expected keyword 'chidlren'"};
         skip_blank_spaces(is);
         is >> c;
         if (c != '=') throw parser_exception{"Expected keyword '='"};
@@ -1025,7 +1008,7 @@ std::istream& operator>>(std::istream& is, trie<T>& t){
         is >> c;
         if (c != '{') throw parser_exception{"Expected keyword '{'"};
         
-        node(is, t);
+        node(is, new_trie);
         
         skip_blank_spaces(is);
         is >> c;
@@ -1035,6 +1018,9 @@ std::istream& operator>>(std::istream& is, trie<T>& t){
     // Make sure reached the end of file
     skip_blank_spaces(is);
     if(is.peek() != EOF) throw parser_exception{"Unexpected char detected"};
+
+    t = new_trie;
+
     return is;
 }
 
@@ -1123,7 +1109,7 @@ void trie<T>::path_compress(){
        return;
     }else if(this->m_p && this->m_c.has_one_child()){
         (*(this->m_c.begin())).path_compress();
-        int* tmp_l = new int{*(this->m_l) + *(this->m_c.begin()->m_l)};
+        T* tmp_l = new T{*(this->m_l) + *(this->m_c.begin()->m_l)};
         this->set_label(tmp_l);
         delete tmp_l;
         trie<T> next_children{*(this->m_c.begin())};
