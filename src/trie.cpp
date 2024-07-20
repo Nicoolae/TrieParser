@@ -1109,7 +1109,7 @@ void trie<T>::path_compress(){
        return;
     }else if(this->m_p && this->m_c.has_one_child()){
         (*(this->m_c.begin())).path_compress();
-        T* tmp_l = new T{*(this->m_l) + *(this->m_c.begin()->m_l)};
+        T* tmp_l = new T{static_cast<T>(*(this->m_l) + *(this->m_c.begin()->m_l))};
         this->set_label(tmp_l);
         delete tmp_l;
         trie<T> next_children{*(this->m_c.begin())};
